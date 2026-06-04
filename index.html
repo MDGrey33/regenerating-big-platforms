@@ -73,6 +73,21 @@ h1{font-size:clamp(28px,5vw,46px);line-height:1.05;letter-spacing:-.02em;margin:
 .detail b,.detail strong{font-weight:700;}
 .detail .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;background:var(--paper2);padding:1px 5px;border-radius:4px;}
 
+/* preface / framing */
+.preface{margin:16px 0 4px;max-width:74ch;}
+.preface p{font-size:clamp(15px,1.95vw,18.5px);line-height:1.62;color:var(--ink);margin:0 0 13px;}
+.preface b{font-weight:750;}
+.meta-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0 2px;}
+@media (max-width:640px){.meta-row{grid-template-columns:1fr;}}
+.meta{border:1px solid var(--line);border-radius:13px;padding:13px 15px;background:var(--card);}
+.meta .lab{font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;font-weight:800;color:var(--dur);margin-bottom:6px;}
+.meta.get .lab{color:var(--disp);}
+.meta-row .meta{border-top:3px solid var(--dur);}
+.meta-row .meta.get{border-top:3px solid var(--disp);}
+.meta p{font-size:13.5px;line-height:1.48;color:var(--ink-soft,var(--ink));margin:0;}
+.readnote{font-size:13px;color:var(--muted);margin:26px 0 8px;display:flex;align-items:center;gap:8px;}
+.readnote::before{content:"↓";font-weight:800;color:var(--dur);}
+
 /* helper classes the diagrams use */
 .fill-disp{fill:var(--disp);} .fill-dur{fill:var(--dur);} .fill-dan{fill:var(--dan);}
 .fill-warn{fill:var(--warn);} .fill-dec{fill:var(--dec);} .fill-leg{fill:var(--leg);} .fill-card{fill:var(--card);}
@@ -109,10 +124,10 @@ h1{font-size:clamp(28px,5vw,46px);line-height:1.05;letter-spacing:-.02em;margin:
 <body>
 <div class="wrap">
   <div class="mast">
-    <div class="kick">Visual guide · one concept per panel</div>
+    <div class="kick">Visual guide · using AI coding agents to speed up development</div>
     <h1>Capturing the AI&#8209;regeneration 50&times; on a <em>heavy</em> platform</h1>
-    <p class="sub">Read it top to bottom. Each panel = one idea, one picture, one takeaway. Colour always means the same thing (see key below).</p>
   </div>
+  <div class="preface"><p>You’ve been told to “just use AI to go faster.” It’s real: AI coding agents can now write a working version of your code from a clear description in minutes — so cheaply that you stop carefully maintaining code and start treating it as <b>disposable</b>: when you need a change, you regenerate it instead of editing it. What you protect instead is the <b>description of what it should do</b> — the spec, the contracts, the tests, the database schema.</p><p>On a brand-new project that shift makes building roughly <b>50× faster</b>. The catch: it doesn’t come for free on a big, old, business-critical platform — no written spec, thin tests, one tangled shared database, where a single mistake can take everything down. So this guide is the <b>operating model for capturing that AI speed on a heavy platform safely, one slice at a time</b> — including the honest cases where it simply isn’t worth it.</p><div class="meta-row"><div class="meta"><div class="lab">Who this is for</div><p>Engineering leaders, architects, staff/principal engineers, and platform teams who own a large, long-lived production system and have been told “just use AI to go faster.”</p></div><div class="meta get"><div class="lab">What you’ll get</div><p>A clear way to tell where on your platform AI regeneration actually pays off, where it doesn’t, and how to do it without breaking production.</p></div></div></div><p class="readnote">How to read it: top to bottom — each panel is one idea, one picture, one takeaway. Colour always means the same thing (see key).</p>
   <div class="legend"><h2>Colour = meaning (learn it once, it holds across every diagram)</h2><div class="legend-grid"><div class="lg"><span class="sw" style="background:var(--disp)"></span><span><b>Disposable</b> — regenerated code</span></div><div class="lg"><span class="sw" style="background:var(--dur)"></span><span><b>Durable</b> — spec / contracts / tests / schema</span></div><div class="lg"><span class="sw" style="background:var(--dan)"></span><span><b>Trap</b> — never do this</span></div><div class="lg"><span class="sw" style="background:var(--warn)"></span><span><b>Caveat</b> — regulated / careful</span></div><div class="lg"><span class="sw" style="background:var(--dec)"></span><span><b>Decision</b> — a gate / a choice</span></div><div class="lg"><span class="sw" style="background:var(--leg)"></span><span><b>Legacy</b> — the old system</span></div></div></div>
   <section class="card"><div class="card-head"><div class="card-num">1</div><h2 class="card-title">Don&#x27;t Rewrite — Build A Foundry</h2></div><div class="card-body"><div style="width:100%">
 <svg viewBox="0 0 760 430" width="100%" style="height:auto;display:block" xmlns="http://www.w3.org/2000/svg" font-family="inherit">
