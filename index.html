@@ -1,0 +1,1817 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Regenerating a Big Platform — Visual Guide</title>
+<style>
+:root{
+  --ink:#15171c; --muted:#5b616e; --faint:#9aa1ad; --line:#d9d6cc;
+  --paper:#fbfaf7; --paper2:#f3f1ea; --card:#ffffff;
+  --disp:#1f5fbf; --disp-soft:#e4edf9;
+  --dur:#0f6e75;  --dur-soft:#d8ecee;
+  --dan:#c0392b;  --dan-soft:#f7e0dc;
+  --warn:#b4791b; --warn-soft:#f4e7cd;
+  --dec:#6b3fa0;  --dec-soft:#ece2f6;
+  --leg:#6b7280;  --leg-soft:#e7e5e0;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;max-width:100%;overflow-x:hidden;}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased; line-height:1.5;
+}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
+.wrap{max-width:980px;margin:0 auto;padding:26px 20px 60px;}
+
+/* masthead */
+.mast{border-top:4px solid var(--ink);padding-top:16px;margin-bottom:18px;}
+.mast .kick{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-weight:800;}
+h1{font-size:clamp(28px,5vw,46px);line-height:1.05;letter-spacing:-.02em;margin:8px 0 6px;font-weight:800;}
+.sub{font-size:clamp(14px,1.7vw,17px);color:var(--muted);max-width:60ch;}
+
+/* how-to + legend */
+.legend{
+  margin:18px 0 30px;border:1px solid var(--line);border-radius:14px;background:var(--card);
+  padding:14px 16px;
+}
+.legend h2{font-size:12px;letter-spacing:.16em;text-transform:uppercase;margin:0 0 10px;color:var(--muted);}
+.legend-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px 16px;}
+.lg{display:flex;align-items:center;gap:9px;font-size:13px;}
+.lg .sw{width:22px;height:14px;border-radius:4px;flex:none;}
+.lg b{font-weight:700;}
+.lg span{color:var(--muted);}
+
+/* cards */
+.card{
+  background:var(--card);border:1px solid var(--line);border-radius:18px;
+  padding:22px 22px 18px;margin:0 0 22px;
+  box-shadow:0 1px 0 rgba(0,0,0,.02);
+}
+.card-head{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+.card-num{
+  flex:none;width:38px;height:38px;border-radius:11px;background:var(--ink);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px;
+}
+.card-title{font-size:clamp(18px,2.4vw,24px);font-weight:800;letter-spacing:-.01em;margin:0;}
+.card-body{margin:6px 0 4px;}
+.card-body svg{display:block;width:100%;height:auto;}
+.point{
+  margin:16px 0 0;padding:12px 14px;border-radius:10px;background:var(--dur-soft);
+  border-left:4px solid var(--dur);font-size:15px;line-height:1.45;
+}
+.point .pt{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:var(--dur);margin-right:8px;}
+
+/* comprehensive elaboration block */
+.detail{margin:16px 2px 2px;font-size:14.5px;line-height:1.62;color:var(--ink);}
+.detail h3{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:0 0 9px;font-weight:800;display:flex;align-items:center;gap:8px;}
+.detail h3::after{content:"";flex:1;height:1px;background:var(--line);}
+.detail p{margin:0 0 10px;}
+.detail ul{margin:6px 0 11px;padding-left:20px;}
+.detail li{margin:0 0 6px;}
+.detail b,.detail strong{font-weight:700;}
+.detail .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;background:var(--paper2);padding:1px 5px;border-radius:4px;}
+
+/* helper classes the diagrams use */
+.fill-disp{fill:var(--disp);} .fill-dur{fill:var(--dur);} .fill-dan{fill:var(--dan);}
+.fill-warn{fill:var(--warn);} .fill-dec{fill:var(--dec);} .fill-leg{fill:var(--leg);} .fill-card{fill:var(--card);}
+.fill-disp-soft{fill:var(--disp-soft);} .fill-dur-soft{fill:var(--dur-soft);} .fill-dan-soft{fill:var(--dan-soft);}
+.fill-warn-soft{fill:var(--warn-soft);} .fill-dec-soft{fill:var(--dec-soft);} .fill-leg-soft{fill:var(--leg-soft);}
+.stroke-disp{stroke:var(--disp);} .stroke-dur{stroke:var(--dur);} .stroke-dan{stroke:var(--dan);}
+.stroke-warn{stroke:var(--warn);} .stroke-dec{stroke:var(--dec);} .stroke-leg{stroke:var(--leg);} .stroke-line{stroke:var(--line);}
+.svg-title{font:800 17px -apple-system,"Segoe UI",Roboto,sans-serif;}
+.svg-label{font:600 13px -apple-system,"Segoe UI",Roboto,sans-serif;}
+.svg-sub{font:500 10.5px -apple-system,"Segoe UI",Roboto,sans-serif;}
+.tx-ink{fill:var(--ink);} .tx-white{fill:#fff;} .tx-muted{fill:var(--muted);}
+.tx-disp{fill:var(--disp);} .tx-dur{fill:var(--dur);} .tx-dan{fill:var(--dan);} .tx-warn{fill:var(--warn);} .tx-dec{fill:var(--dec);} .tx-leg{fill:var(--leg);}
+.sw1{stroke-width:1.5;} .sw2{stroke-width:2.5;} .dash{stroke-dasharray:6 5;}
+[fill="none"]{fill:none;}
+
+/* non-svg box helpers */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;}
+.box{border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;font-size:13.5px;background:var(--card);}
+.box--disp{border-color:var(--disp);background:var(--disp-soft);}
+.box--dur{border-color:var(--dur);background:var(--dur-soft);}
+.box--dan{border-color:var(--dan);background:var(--dan-soft);}
+.box--warn{border-color:var(--warn);background:var(--warn-soft);}
+.box--dec{border-color:var(--dec);background:var(--dec-soft);}
+.box--leg{border-color:var(--leg);background:var(--leg-soft);}
+.tag{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;}
+.arrow{color:var(--muted);font-weight:800;}
+
+@media print{
+  body{background:#fff;}
+  .card{break-inside:avoid;page-break-inside:avoid;box-shadow:none;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="mast">
+    <div class="kick">Visual guide · one concept per panel</div>
+    <h1>Capturing the AI&#8209;regeneration 50&times; on a <em>heavy</em> platform</h1>
+    <p class="sub">Read it top to bottom. Each panel = one idea, one picture, one takeaway. Colour always means the same thing (see key below).</p>
+  </div>
+  <div class="legend"><h2>Colour = meaning (learn it once, it holds across every diagram)</h2><div class="legend-grid"><div class="lg"><span class="sw" style="background:var(--disp)"></span><span><b>Disposable</b> — regenerated code</span></div><div class="lg"><span class="sw" style="background:var(--dur)"></span><span><b>Durable</b> — spec / contracts / tests / schema</span></div><div class="lg"><span class="sw" style="background:var(--dan)"></span><span><b>Trap</b> — never do this</span></div><div class="lg"><span class="sw" style="background:var(--warn)"></span><span><b>Caveat</b> — regulated / careful</span></div><div class="lg"><span class="sw" style="background:var(--dec)"></span><span><b>Decision</b> — a gate / a choice</span></div><div class="lg"><span class="sw" style="background:var(--leg)"></span><span><b>Legacy</b> — the old system</span></div></div></div>
+  <section class="card"><div class="card-head"><div class="card-num">1</div><h2 class="card-title">Don&#x27;t Rewrite — Build A Foundry</h2></div><div class="card-body"><div style="width:100%">
+<svg viewBox="0 0 760 430" width="100%" style="height:auto;display:block" xmlns="http://www.w3.org/2000/svg" font-family="inherit">
+  <defs>
+    <marker id="ah-ink" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" class="fill-leg"/>
+    </marker>
+    <marker id="ah-teal" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" class="fill-dur"/>
+    </marker>
+    <marker id="ah-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" class="fill-disp"/>
+    </marker>
+  </defs>
+
+  <!-- ================= LEFT: BEFORE / the wrong move ================= -->
+  <text x="20" y="28" class="svg-sub tx-muted" font-weight="700" letter-spacing="1.5">THE WRONG MOVE</text>
+
+  <!-- tangled legacy monolith blob -->
+  <path d="M70 70 C40 78 38 120 52 150 C30 170 44 210 78 214 C92 250 150 252 168 224 C204 234 232 200 218 168 C242 142 226 100 192 96 C182 64 110 56 70 70 Z"
+        class="fill-leg-soft stroke-leg sw2"/>
+  <!-- internal tangle lines -->
+  <g class="stroke-leg sw1" fill="none" opacity="0.55">
+    <path d="M78 110 C120 130 110 170 160 180"/>
+    <path d="M90 170 C130 150 150 200 200 150"/>
+    <path d="M120 95 C100 140 170 145 185 185"/>
+    <path d="M70 140 C115 145 130 110 195 120"/>
+  </g>
+  <text x="135" y="135" text-anchor="middle" class="svg-label tx-ink" font-weight="700">Heavy</text>
+  <text x="135" y="153" text-anchor="middle" class="svg-label tx-ink" font-weight="700">platform</text>
+  <text x="135" y="290" text-anchor="middle" class="svg-sub tx-muted">No spec · shared DB · scary</text>
+
+  <!-- arrow to rewrite -->
+  <line x1="232" y1="150" x2="288" y2="150" class="stroke-leg sw2" marker-end="url(#ah-ink)"/>
+
+  <!-- rewrite box = fails -->
+  <rect x="294" y="112" width="118" height="76" rx="10" class="fill-dan-soft stroke-dan sw2"/>
+  <text x="353" y="142" text-anchor="middle" class="svg-label tx-ink" font-weight="700">Rewrite the</text>
+  <text x="353" y="160" text-anchor="middle" class="svg-label tx-ink" font-weight="700">whole thing</text>
+  <!-- big red X -->
+  <g class="stroke-dan sw2">
+    <line x1="333" y1="125" x2="373" y2="175"/>
+    <line x1="373" y1="125" x2="333" y2="175"/>
+  </g>
+  <text x="353" y="205" text-anchor="middle" class="svg-sub" fill="var(--dan)" font-weight="700">FAILS</text>
+
+  <!-- vertical divider -->
+  <line x1="430" y1="48" x2="430" y2="400" class="stroke-line sw1 dash"/>
+
+  <!-- ================= RIGHT: AFTER / the foundry ================= -->
+  <text x="452" y="28" class="svg-sub tx-muted" font-weight="700" letter-spacing="1.5">THE RIGHT MOVE</text>
+
+  <!-- small legacy source on the right -->
+  <path d="M470 78 C454 84 452 110 462 128 C448 142 458 166 480 168 C488 188 520 188 530 170 C552 174 568 152 560 132 C574 116 564 92 544 90 C538 70 494 66 470 78 Z"
+        class="fill-leg-soft stroke-leg sw2"/>
+  <g class="stroke-leg sw1" fill="none" opacity="0.5">
+    <path d="M478 108 C500 118 496 138 522 142"/>
+    <path d="M488 134 C508 124 516 150 540 122"/>
+  </g>
+  <text x="512" y="126" text-anchor="middle" class="svg-sub tx-ink" font-weight="700">legacy</text>
+
+  <!-- feed arrow: one slice into foundry -->
+  <line x1="568" y1="124" x2="606" y2="124" class="stroke-leg sw2" marker-end="url(#ah-ink)"/>
+
+  <!-- FOUNDRY (teal, durable) -->
+  <rect x="610" y="86" width="130" height="78" rx="12" class="fill-dur-soft stroke-dur sw2"/>
+  <text x="675" y="118" text-anchor="middle" class="svg-label tx-ink" font-weight="800" letter-spacing="1">FOUNDRY</text>
+  <text x="675" y="138" text-anchor="middle" class="svg-sub tx-muted">converts one</text>
+  <text x="675" y="152" text-anchor="middle" class="svg-sub tx-muted">slice at a time</text>
+
+  <!-- emit arrows down to clean slices -->
+  <line x1="675" y1="164" x2="675" y2="196" class="stroke-disp sw2" marker-end="url(#ah-blue)"/>
+
+  <!-- three clean regenerated slices, peeled off over time -->
+  <g>
+    <rect x="468" y="206" width="120" height="46" rx="8" class="fill-disp-soft stroke-disp sw2 dash"/>
+    <text x="528" y="226" text-anchor="middle" class="svg-label tx-ink" font-weight="700">Clean slice 1</text>
+    <text x="528" y="242" text-anchor="middle" class="svg-sub tx-muted">regenerated</text>
+    <text x="595" y="232" class="svg-label" fill="var(--dur)" font-weight="800">✓</text>
+  </g>
+  <g>
+    <rect x="468" y="262" width="120" height="46" rx="8" class="fill-disp-soft stroke-disp sw2 dash"/>
+    <text x="528" y="282" text-anchor="middle" class="svg-label tx-ink" font-weight="700">Clean slice 2</text>
+    <text x="528" y="298" text-anchor="middle" class="svg-sub tx-muted">regenerated</text>
+    <text x="595" y="288" class="svg-label" fill="var(--dur)" font-weight="800">✓</text>
+  </g>
+  <g>
+    <rect x="468" y="318" width="120" height="46" rx="8" class="fill-disp-soft stroke-disp sw2 dash"/>
+    <text x="528" y="338" text-anchor="middle" class="svg-label tx-ink" font-weight="700">Clean slice 3</text>
+    <text x="528" y="354" text-anchor="middle" class="svg-sub tx-muted">regenerated</text>
+    <text x="595" y="344" class="svg-label" fill="var(--dur)" font-weight="800">✓</text>
+  </g>
+
+  <!-- connect foundry output stack -->
+  <path d="M675 196 C675 200 560 196 560 210 L560 229" fill="none" class="stroke-disp sw1 dash"/>
+  <path d="M620 252 C600 258 595 262 595 276 L595 285" fill="none" class="stroke-disp sw1 dash"/>
+  <path d="M620 308 C604 314 600 318 600 332 L600 341" fill="none" class="stroke-disp sw1 dash"/>
+
+  <!-- "over time" axis -->
+  <line x1="448" y1="208" x2="448" y2="366" class="stroke-line sw1" marker-end="url(#ah-ink)"/>
+  <text x="438" y="290" text-anchor="middle" class="svg-sub tx-muted" transform="rotate(-90 438 290)" letter-spacing="1">over time</text>
+
+  <!-- bottom takeaway strip -->
+  <rect x="20" y="392" width="392" height="0.1" fill="none"/>
+  <text x="216" y="345" text-anchor="middle" class="svg-sub tx-muted">One big rewrite =</text>
+  <text x="216" y="361" text-anchor="middle" class="svg-label" fill="var(--dan)" font-weight="700">huge blast radius</text>
+</svg>
+</div></div><p class="point"><span class="pt">The point</span>You don&#x27;t rewrite the heavy platform; you build a foundry that converts it into clean, regenerated slices one at a time.</p><div class="detail"><h3>In depth</h3><p>The greenfield thesis — code is disposable, so protect the spec, contracts, tests and schema — works only because regeneration is both <b>cheap</b> and <b>safe</b>. A heavy platform breaks the "safe" half: there is no written spec, the tests don't exist or can't be trusted, the database is shared, and the blast radius of any change is the whole business. The big-bang rewrite is the classic graveyard.</p>
+<p>So invert the move. Don't try to regenerate the platform — stand up a repeatable <b>foundry</b> (a pipeline plus a platform team) that lifts <b>one</b> bounded capability out of the legacy, gives it the durable layer it never had, regenerates it safely behind a stable boundary, and moves on.</p>
+<p>The 50× arrives slice by slice, not all at once — and a large fraction of the platform may never go through the foundry at all. That isn't failure; it's the correct end state (see card 12).</p></div></section>
+<section class="card"><div class="card-head"><div class="card-num">2</div><h2 class="card-title">Why the 50× Won&#x27;t Transfer</h2></div><div class="card-body"><svg viewBox="0 0 760 470" width="100%" style="height:auto;display:block" role="img" aria-label="Greenfield versus brownfield on the four preconditions for cheap regeneration">
+  <style>
+    .pc-row-line { stroke: var(--line); stroke-width: 1; }
+  </style>
+
+  <!-- Column headers -->
+  <g>
+    <rect x="222" y="14" width="248" height="44" rx="10" class="fill-dur-soft stroke-dur sw2"/>
+    <text x="346" y="35" text-anchor="middle" class="svg-label tx-ink" font-weight="700">GREENFIELD</text>
+    <text x="346" y="50" text-anchor="middle" class="svg-sub tx-muted">cheap regen works</text>
+
+    <rect x="490" y="14" width="248" height="44" rx="10" class="fill-dan-soft stroke-dan sw2"/>
+    <text x="614" y="35" text-anchor="middle" class="svg-label tx-ink" font-weight="700">BROWNFIELD</text>
+    <text x="614" y="50" text-anchor="middle" class="svg-sub tx-muted">every precondition missing</text>
+  </g>
+
+  <!-- ===== ROW 1: SPEC ===== -->
+  <g transform="translate(0,76)">
+    <rect x="14" y="0" width="196" height="80" rx="10" class="fill-card stroke-line sw1"/>
+    <text x="32" y="34" class="svg-label tx-ink" font-weight="700">1 · SPEC</text>
+    <text x="32" y="55" class="svg-sub tx-muted">a written source of truth</text>
+
+    <!-- greenfield -->
+    <rect x="222" y="0" width="248" height="80" rx="10" class="fill-dur-soft stroke-dur sw1"/>
+    <circle cx="252" cy="40" r="14" class="fill-dur"/>
+    <path d="M245 40 l5 5 l9 -11" fill="none" stroke="var(--card)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="276" y="45" class="svg-label tx-ink">spec exists, on paper</text>
+
+    <!-- brownfield -->
+    <rect x="490" y="0" width="248" height="80" rx="10" class="fill-dan-soft stroke-dan sw1"/>
+    <circle cx="520" cy="40" r="14" class="fill-dan"/>
+    <path d="M514 34 l12 12 M526 34 l-12 12" fill="none" stroke="var(--card)" stroke-width="2.5" stroke-linecap="round"/>
+    <text x="544" y="45" class="svg-label tx-ink">in people&#8217;s heads</text>
+  </g>
+
+  <!-- ===== ROW 2: TESTS ===== -->
+  <g transform="translate(0,166)">
+    <rect x="14" y="0" width="196" height="80" rx="10" class="fill-card stroke-line sw1"/>
+    <text x="32" y="34" class="svg-label tx-ink" font-weight="700">2 · TESTS</text>
+    <text x="32" y="55" class="svg-sub tx-muted">a trustworthy oracle</text>
+
+    <rect x="222" y="0" width="248" height="80" rx="10" class="fill-dur-soft stroke-dur sw1"/>
+    <circle cx="252" cy="40" r="14" class="fill-dur"/>
+    <path d="M245 40 l5 5 l9 -11" fill="none" stroke="var(--card)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="276" y="45" class="svg-label tx-ink">tests catch regressions</text>
+
+    <rect x="490" y="0" width="248" height="80" rx="10" class="fill-dan-soft stroke-dan sw1"/>
+    <circle cx="520" cy="40" r="14" class="fill-dan"/>
+    <path d="M514 34 l12 12 M526 34 l-12 12" fill="none" stroke="var(--card)" stroke-width="2.5" stroke-linecap="round"/>
+    <text x="544" y="45" class="svg-label tx-ink">weak / none</text>
+  </g>
+
+  <!-- ===== ROW 3: SCHEMA ===== -->
+  <g transform="translate(0,256)">
+    <rect x="14" y="0" width="196" height="80" rx="10" class="fill-card stroke-line sw1"/>
+    <text x="32" y="34" class="svg-label tx-ink" font-weight="700">3 · SCHEMA</text>
+    <text x="32" y="55" class="svg-sub tx-muted">data you own &amp; control</text>
+
+    <rect x="222" y="0" width="248" height="80" rx="10" class="fill-dur-soft stroke-dur sw1"/>
+    <circle cx="252" cy="40" r="14" class="fill-dur"/>
+    <path d="M245 40 l5 5 l9 -11" fill="none" stroke="var(--card)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="276" y="45" class="svg-label tx-ink">clean, owned schema</text>
+
+    <rect x="490" y="0" width="248" height="80" rx="10" class="fill-dan-soft stroke-dan sw1"/>
+    <circle cx="520" cy="40" r="14" class="fill-dan"/>
+    <path d="M514 34 l12 12 M526 34 l-12 12" fill="none" stroke="var(--card)" stroke-width="2.5" stroke-linecap="round"/>
+    <text x="544" y="45" class="svg-label tx-ink">shared &amp; tangled</text>
+  </g>
+
+  <!-- ===== ROW 4: BLAST RADIUS ===== -->
+  <g transform="translate(0,346)">
+    <rect x="14" y="0" width="196" height="80" rx="10" class="fill-card stroke-line sw1"/>
+    <text x="32" y="34" class="svg-label tx-ink" font-weight="700">4 · BLAST</text>
+    <text x="32" y="55" class="svg-sub tx-muted">size of failure radius</text>
+
+    <rect x="222" y="0" width="248" height="80" rx="10" class="fill-dur-soft stroke-dur sw1"/>
+    <circle cx="252" cy="40" r="14" class="fill-dur"/>
+    <path d="M245 40 l5 5 l9 -11" fill="none" stroke="var(--card)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="276" y="45" class="svg-label tx-ink">small &amp; contained</text>
+
+    <rect x="490" y="0" width="248" height="80" rx="10" class="fill-dan-soft stroke-dan sw1"/>
+    <circle cx="520" cy="40" r="14" class="fill-dan"/>
+    <path d="M514 34 l12 12 M526 34 l-12 12" fill="none" stroke="var(--card)" stroke-width="2.5" stroke-linecap="round"/>
+    <text x="544" y="45" class="svg-label tx-ink">huge</text>
+  </g>
+
+  <!-- bottom takeaway strip -->
+  <g transform="translate(0,440)">
+    <text x="490" y="14" class="svg-sub tx-muted" font-style="italic">4 × ✕ &#8594; you must MANUFACTURE the preconditions first</text>
+  </g>
+</svg></div><p class="point"><span class="pt">The point</span>Every precondition that makes regeneration cheap is missing on a brownfield, so you must manufacture them before any 50× is possible.</p><div class="detail"><h3>In depth</h3><p>Cheap regeneration rests on four things being present. On greenfield you author them as you go; on a brownfield they're absent, which is exactly why the multiple doesn't transfer for free.</p>
+<ul>
+<li><b>Spec</b> — greenfield: written intent. Brownfield: intent lives in people's heads and in the code's accidents.</li>
+<li><b>Tests</b> — greenfield: a harness you trust. Brownfield: weak, coupled to the implementation, or absent.</li>
+<li><b>Schema</b> — greenfield: clean and owned. Brownfield: one shared database many systems couple to directly.</li>
+<li><b>Blast radius</b> — greenfield: small and isolated. Brownfield: enormous — everything touches everything.</li>
+</ul>
+<p>The work of cards 5–10 is literally <b>manufacturing these four (plus performance)</b> for one slice at a time. Until they exist for a slice, that slice cannot be safely regenerated — full stop.</p></div></section>
+<section class="card"><div class="card-head"><div class="card-num">3</div><h2 class="card-title">The Unit: One Mediated-Seam Slice</h2></div><div class="card-body"><div style="width:100%">
+<svg viewBox="0 0 760 470" width="100%" role="img" aria-label="Anatomy of a mediated-seam slice: request enters one seam, runs disposable slice logic inside a transaction, and writes through a mediation layer that owns the contested rows. Bounded by a contract perimeter of at most five consumers." font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" class="fill-dur"/>
+    </marker>
+    <marker id="arInk" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" class="tx-ink" fill="currentColor"/>
+    </marker>
+  </defs>
+
+  <!-- ============ CONTRACT PERIMETER (dashed purple, the outer boundary) ============ -->
+  <rect x="14" y="44" width="732" height="320" rx="16"
+        class="fill-dec-soft stroke-dec sw2 dash"/>
+  <g text-anchor="start">
+    <rect x="34" y="30" width="300" height="28" rx="8" class="fill-dec"/>
+    <text x="48" y="49" class="svg-label tx-white" font-weight="700">CONTRACT PERIMETER</text>
+    <text x="214" y="49" class="svg-sub tx-white">≤ 5 known consumers</text>
+  </g>
+
+  <!-- ============ INCOMING REQUEST ============ -->
+  <g text-anchor="middle">
+    <rect x="34" y="150" width="96" height="60" rx="10" class="fill-card stroke-line sw1"/>
+    <text x="82" y="176" class="svg-label tx-ink" font-weight="600">Incoming</text>
+    <text x="82" y="194" class="svg-label tx-ink" font-weight="600">request</text>
+  </g>
+  <line x1="130" y1="180" x2="166" y2="180" class="stroke-dur sw2" marker-end="url(#ar)"/>
+
+  <!-- ============ THE SEAM (durable teal, one instrumentable boundary) ============ -->
+  <g text-anchor="middle">
+    <rect x="168" y="120" width="62" height="120" rx="10" class="fill-dur stroke-dur sw2"/>
+    <text x="199" y="170" class="svg-label tx-white" font-weight="700">SEAM</text>
+    <text x="199" y="188" class="svg-sub tx-white">✓ one</text>
+    <text x="199" y="201" class="svg-sub tx-white">boundary</text>
+  </g>
+  <line x1="230" y1="180" x2="266" y2="180" class="stroke-dur sw2" marker-end="url(#ar)"/>
+
+  <!-- ============ TRANSACTION BOUNDARY (wraps slice logic; teal solid) ============ -->
+  <rect x="270" y="92" width="232" height="176" rx="14" class="fill-dur-soft stroke-dur sw2"/>
+  <text x="386" y="112" text-anchor="middle" class="svg-label tx-ink" font-weight="700">Transaction it begins &amp; commits</text>
+
+  <!-- ============ SLICE LOGIC (disposable blue, dashed border) ============ -->
+  <g text-anchor="middle">
+    <rect x="296" y="128" width="180" height="118" rx="12" class="fill-disp-soft stroke-disp sw2 dash"/>
+    <text x="386" y="172" class="svg-label tx-ink" font-weight="700">Slice logic</text>
+    <text x="386" y="194" class="svg-sub tx-muted">disposable · regenerated</text>
+    <text x="386" y="222" class="svg-sub tx-muted" font-style="italic">(the cheap layer)</text>
+  </g>
+
+  <!-- begin / commit ticks on the transaction edges -->
+  <text x="296" y="126" text-anchor="start" class="svg-sub tx-muted">begin ▸</text>
+  <text x="476" y="126" text-anchor="end" class="svg-sub tx-muted">◂ commit</text>
+
+  <!-- arrow: transaction -> mediation -->
+  <line x1="502" y1="180" x2="546" y2="180" class="stroke-dur sw2" marker-end="url(#ar)"/>
+  <text x="524" y="170" text-anchor="middle" class="svg-sub tx-muted">writes</text>
+
+  <!-- ============ WRITE-MEDIATION LAYER (durable teal) ============ -->
+  <g text-anchor="middle">
+    <rect x="548" y="120" width="170" height="120" rx="12" class="fill-dur stroke-dur sw2"/>
+    <text x="633" y="150" class="svg-label tx-white" font-weight="700">Write-mediation</text>
+    <text x="633" y="167" class="svg-label tx-white" font-weight="700">layer</text>
+    <text x="633" y="190" class="svg-sub tx-white">owns the</text>
+    <text x="633" y="204" class="svg-sub tx-white">contested rows</text>
+    <text x="633" y="224" class="svg-sub tx-white">✓ single owner</text>
+  </g>
+
+  <!-- arrow down into DB -->
+  <line x1="633" y1="240" x2="633" y2="290" class="stroke-dur sw2" marker-end="url(#ar)"/>
+
+  <!-- ============ SHARED DB (legacy grey cylinder, contested rows highlighted) ============ -->
+  <g>
+    <path d="M573 300 a60 14 0 0 0 120 0 v40 a60 14 0 0 1 -120 0 z" class="fill-leg-soft stroke-leg sw1"/>
+    <ellipse cx="633" cy="300" rx="60" ry="14" class="fill-leg-soft stroke-leg sw1"/>
+    <text x="633" y="304" text-anchor="middle" class="svg-sub tx-ink" font-weight="600">shared DB</text>
+    <text x="633" y="332" text-anchor="middle" class="svg-sub tx-muted">contested rows</text>
+  </g>
+
+  <!-- ============ STATELESS vs STATEFUL tags (bottom strip) ============ -->
+  <g text-anchor="middle">
+    <rect x="34" y="396" width="340" height="58" rx="10" class="fill-dur-soft stroke-dur sw1"/>
+    <text x="204" y="418" class="svg-label tx-ink" font-weight="700">STATELESS</text>
+    <text x="204" y="438" class="svg-sub tx-muted">✓ atomic flip — swap in place</text>
+
+    <rect x="386" y="396" width="340" height="58" rx="10" class="fill-warn-soft stroke-warn sw1"/>
+    <text x="556" y="418" class="svg-label tx-ink" font-weight="700">STATEFUL</text>
+    <text x="556" y="438" class="svg-sub tx-muted">⚠ drain old · pre-warm new</text>
+  </g>
+
+</svg>
+</div></div><p class="point"><span class="pt">The point</span>The unit of work is one capability behind a single instrumentable seam, whose writes are wrapped in a transaction and routed through a mediation layer that owns the contested data.</p><div class="detail"><h3>In depth</h3><p>You never regenerate "the system" or even "a service." The atomic unit is a <b>mediated-seam behavioural slice</b> — the smallest thing that can carry its own durable layer and be swapped safely:</p>
+<ul>
+<li><b>One instrumentable call seam</b> — a single boundary you can route, shadow, and roll back at.</li>
+<li><b>Transaction-contained writes</b> — the slice begins and commits its own transaction; it is <b>not</b> entangled in a transaction other code controls.</li>
+<li><b>Routed through a write-mediation layer</b> that owns the contested rows. Ownership is a property of the mediator, not the slice — claiming a slice exclusively owns rows in a shared schema is a category error.</li>
+<li><b>A closed contract perimeter</b> — ideally ≤5 external consumers, enumerated from DB grants and change-data, not from a trace window.</li>
+</ul>
+<p>Classify each slice up front as <b>stateless</b> (an atomic flag-flip rolls it back) or <b>stateful</b> (owns caches, sessions, leaders → needs a drain / pre-warm / overlap cutover, never an instant flip).</p></div></section>
+<section class="card"><div class="card-head"><div class="card-num">4</div><h2 class="card-title">What is NOT a regeneration unit</h2></div><div class="card-body"><div class="not-a-unit">
+  <style>
+    .not-a-unit svg { width: 100%; height: auto; display: block; }
+    .nau-x { font-weight: 800; }
+  </style>
+  <svg viewBox="0 0 760 560" role="img" aria-label="Five things that are not regeneration units, each crossed out in red with the reason">
+    <defs>
+      <!-- red X used on every card -->
+      <g id="redx">
+        <circle cx="0" cy="0" r="15" class="fill-dan" />
+        <text x="0" y="5.5" text-anchor="middle" class="tx-white nau-x" font-size="18">✕</text>
+      </g>
+    </defs>
+
+    <!-- ============ ROW 1 : two "too small" cards ============ -->
+
+    <!-- Card 1: A FILE -->
+    <g>
+      <rect x="20" y="20" width="350" height="120" rx="14"
+            class="fill-dan-soft stroke-dan sw1" />
+      <use href="#redx" x="44" y="48" />
+      <text x="74" y="54" class="svg-label tx-ink" font-weight="700">A FILE</text>
+      <text x="44" y="92" class="svg-label tx-ink">Too small to carry</text>
+      <text x="44" y="113" class="svg-label tx-ink">the spec + tests.</text>
+    </g>
+
+    <!-- Card 2: A USER STORY -->
+    <g>
+      <rect x="390" y="20" width="350" height="120" rx="14"
+            class="fill-dan-soft stroke-dan sw1" />
+      <use href="#redx" x="414" y="48" />
+      <text x="444" y="54" class="svg-label tx-ink" font-weight="700">A USER STORY</text>
+      <text x="414" y="92" class="svg-label tx-ink">Too small to amortize</text>
+      <text x="414" y="113" class="svg-label tx-ink">the foundry cost.</text>
+    </g>
+
+    <!-- band label: TOO SMALL -->
+    <text x="20" y="168" class="svg-sub tx-muted" font-weight="700" letter-spacing="1">▲ TOO SMALL — can't carry the durable layer</text>
+
+    <!-- ============ ROW 2 : one "too big" card ============ -->
+
+    <!-- Card 3: A MICROSERVICE / MODULE -->
+    <g>
+      <rect x="20" y="190" width="720" height="110" rx="14"
+            class="fill-dan-soft stroke-dan sw1" />
+      <use href="#redx" x="44" y="218" />
+      <text x="74" y="224" class="svg-label tx-ink" font-weight="700">A MICROSERVICE / MODULE</text>
+      <text x="44" y="262" class="svg-label tx-ink">Too big — drags its coupling along. The blast radius and shared</text>
+      <text x="44" y="283" class="svg-label tx-ink">dependencies come with it, so it isn't a clean slice.</text>
+    </g>
+
+    <!-- band label: TOO BIG -->
+    <text x="20" y="328" class="svg-sub tx-muted" font-weight="700" letter-spacing="1">▼ TOO BIG — drags coupling along</text>
+
+    <!-- ============ ROW 3 : two "never / not yet" cards (data) ============ -->
+
+    <!-- Card 4: THE DATABASE SCHEMA (durable, never regenerated) -->
+    <g>
+      <rect x="20" y="350" width="350" height="170" rx="14"
+            class="fill-dan-soft stroke-dan sw1" />
+      <use href="#redx" x="44" y="378" />
+      <text x="74" y="384" class="svg-label tx-ink" font-weight="700">THE DATABASE</text>
+      <text x="74" y="404" class="svg-label tx-ink" font-weight="700">SCHEMA</text>
+
+      <!-- durable chip: data is protected, never regenerated -->
+      <rect x="44" y="424" width="302" height="76" rx="10"
+            class="fill-dur-soft stroke-dur sw1" />
+      <text x="60" y="450" class="svg-sub tx-ink" font-weight="700">DATA IS DURABLE ✓</text>
+      <text x="60" y="472" class="svg-sub tx-ink">Never regenerated —</text>
+      <text x="60" y="490" class="svg-sub tx-ink">only evolved (migrated).</text>
+    </g>
+
+    <!-- Card 5: AN ENTANGLED-TRANSACTION SLICE (caveat: ineligible until decomposed) -->
+    <g>
+      <rect x="390" y="350" width="350" height="170" rx="14"
+            class="fill-dan-soft stroke-dan sw1" />
+      <use href="#redx" x="414" y="378" />
+      <text x="444" y="384" class="svg-label tx-ink" font-weight="700">AN ENTANGLED-</text>
+      <text x="444" y="404" class="svg-label tx-ink" font-weight="700">TRANSACTION SLICE</text>
+
+      <!-- caveat chip: not yet — decompose first -->
+      <rect x="414" y="424" width="302" height="76" rx="10"
+            class="fill-warn-soft stroke-warn sw1" />
+      <text x="430" y="450" class="svg-sub tx-ink" font-weight="700">NOT YET ⚠</text>
+      <text x="430" y="472" class="svg-sub tx-ink">Ineligible until the shared</text>
+      <text x="430" y="490" class="svg-sub tx-ink">transaction is decomposed.</text>
+    </g>
+  </svg>
+</div></div><p class="point"><span class="pt">The point</span>Too small can&#x27;t carry the durable spec and tests, too big drags its coupling along, and data is never regenerated — only evolved.</p><div class="detail"><h3>In depth</h3><p>Picking the wrong granularity is the most common early mistake — and it quietly dooms the effort.</p>
+<ul>
+<li><b>A file</b> — too small to carry a spec, contracts, and a test oracle.</li>
+<li><b>A microservice / repo / module</b> — drags all of its coupling along; you inherit the tangle you were trying to escape.</li>
+<li><b>A user story</b> — too small to amortise the cost of manufacturing the durable layer.</li>
+<li><b>The database schema</b> — data is <b>never</b> regenerated. It only evolves, additively, via expand/contract (card 7).</li>
+<li><b>An entangled-transaction slice</b> — any capability whose writes live inside a multi-writer transaction it doesn't control is ineligible until that transaction is decomposed (saga/outbox), funded as its own project.</li>
+</ul>
+<p>Right-sizing is the whole game: big enough to carry the quad, small enough to verify and roll back.</p></div></section>
+<section class="card"><div class="card-head"><div class="card-num">5</div><h2 class="card-title">The Spine: Regeneration Starts at Stage 4</h2></div><div class="card-body"><style>
+  .pipe-wrap { width:100%; }
+  .pipe-svg { width:100%; height:auto; display:block; }
+  .gate-x { font-size:13px; font-weight:700; }
+</style>
+<div class="pipe-wrap">
+<svg class="pipe-svg" viewBox="0 0 760 690" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Seven-stage foundry pipeline; regeneration begins at stage four">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" class="fill-dec"/>
+    </marker>
+  </defs>
+
+  <!-- ===================== ZONE A: NO REGENERATION (plumbing) ===================== -->
+  <rect x="6" y="6" width="748" height="318" rx="14" class="fill-leg-soft stroke-leg sw1"/>
+  <text x="24" y="34" class="svg-label tx-ink" font-weight="700">NO regeneration yet — plumbing &amp; proof</text>
+  <text x="24" y="52" class="svg-sub tx-muted">Stages S-1 → S2 · grey = legacy work · teal = durable assets being built</text>
+
+  <!-- helper: each stage is a row card -->
+  <!-- S-1 -->
+  <g>
+    <rect x="24" y="66" width="712" height="48" rx="10" class="fill-card stroke-leg sw2"/>
+    <circle cx="52" cy="90" r="15" class="fill-leg"/>
+    <text x="52" y="95" text-anchor="middle" class="svg-label tx-white" font-weight="700">S-1</text>
+    <text x="80" y="86" class="svg-label tx-ink" font-weight="700">Write mediation / decouple data</text>
+    <text x="80" y="104" class="svg-sub tx-muted">Break the shared tangled DB — THE LONG POLE</text>
+    <rect x="560" y="76" width="166" height="28" rx="14" class="fill-warn-soft stroke-warn sw1"/>
+    <text x="643" y="94" text-anchor="middle" class="svg-sub tx-ink" font-weight="700">longest stage</text>
+  </g>
+  <!-- gate -->
+  <g><line x1="52" y1="114" x2="52" y2="126" class="stroke-dec sw1" marker-end="url(#arr)"/>
+     <text x="70" y="128" class="svg-sub tx-muted">⛔ exit criteria: data provably decoupled</text></g>
+
+  <!-- S0 -->
+  <g>
+    <rect x="24" y="132" width="712" height="48" rx="10" class="fill-card stroke-leg sw2"/>
+    <circle cx="52" cy="156" r="15" class="fill-leg"/>
+    <text x="52" y="161" text-anchor="middle" class="svg-label tx-white" font-weight="700">S0</text>
+    <text x="80" y="152" class="svg-label tx-ink" font-weight="700">Cartography &amp; slice selection</text>
+    <text x="80" y="170" class="svg-sub tx-muted">Map the platform; pick one greenfield-shaped slice</text>
+  </g>
+  <g><line x1="52" y1="180" x2="52" y2="192" class="stroke-dec sw1" marker-end="url(#arr)"/>
+     <text x="70" y="194" class="svg-sub tx-muted">⛔ exit criteria: slice ROI clears the gate</text></g>
+
+  <!-- S1 -->
+  <g>
+    <rect x="24" y="198" width="712" height="48" rx="10" class="fill-card stroke-dur sw2"/>
+    <circle cx="52" cy="222" r="15" class="fill-dur"/>
+    <text x="52" y="227" text-anchor="middle" class="svg-label tx-white" font-weight="700">S1</text>
+    <text x="80" y="218" class="svg-label tx-ink" font-weight="700">Manufacture durable layer + prove oracle complete</text>
+    <text x="80" y="236" class="svg-sub tx-muted">Spec, contracts &amp; the deterministic test oracle</text>
+    <text x="712" y="227" text-anchor="end" class="gate-x fill-dur" font-weight="700">✓</text>
+  </g>
+  <g><line x1="52" y1="246" x2="52" y2="258" class="stroke-dec sw1" marker-end="url(#arr)"/>
+     <text x="70" y="260" class="svg-sub tx-muted">⛔ exit criteria: oracle PROVABLY complete</text></g>
+
+  <!-- S2 -->
+  <g>
+    <rect x="24" y="264" width="712" height="48" rx="10" class="fill-card stroke-dur sw2"/>
+    <circle cx="52" cy="288" r="15" class="fill-dur"/>
+    <text x="52" y="293" text-anchor="middle" class="svg-label tx-white" font-weight="700">S2</text>
+    <text x="80" y="284" class="svg-label tx-ink" font-weight="700">Insert the seam (no-op)</text>
+    <text x="80" y="302" class="svg-sub tx-muted">Wire the boundary; behavior unchanged</text>
+    <text x="712" y="293" text-anchor="end" class="gate-x fill-dur" font-weight="700">✓</text>
+  </g>
+
+  <!-- big gate between zones -->
+  <g>
+    <line x1="52" y1="312" x2="52" y2="340" class="stroke-dec sw2" marker-end="url(#arr)"/>
+    <rect x="70" y="320" width="666" height="24" rx="12" class="fill-dec-soft stroke-dec sw1"/>
+    <text x="403" y="337" text-anchor="middle" class="svg-sub tx-ink" font-weight="700">⛔ THE GATE: plumbing done &amp; oracle proven — only now may code be regenerated</text>
+  </g>
+
+  <!-- ===================== ZONE B: REGENERATION (disposable) ===================== -->
+  <rect x="6" y="356" width="748" height="300" rx="14" class="fill-disp-soft stroke-disp sw1 dash"/>
+  <text x="24" y="384" class="svg-label tx-ink" font-weight="700">Regeneration zone — disposable code</text>
+  <text x="24" y="402" class="svg-sub tx-muted">Stages S3 → S5 · blue dashed = regenerated / cheap layer</text>
+
+  <!-- S3 = FIRST blue box -->
+  <g>
+    <rect x="24" y="416" width="712" height="58" rx="10" class="fill-disp-soft stroke-disp sw2 dash"/>
+    <circle cx="52" cy="445" r="15" class="fill-disp"/>
+    <text x="52" y="450" text-anchor="middle" class="svg-label tx-white" font-weight="700">S3</text>
+    <text x="80" y="438" class="svg-label tx-ink" font-weight="700">REGENERATE + differential-test offline</text>
+    <text x="80" y="455" class="svg-sub tx-ink" font-weight="700" fill="var(--disp)">← first regeneration happens HERE (stage 4 of 7)</text>
+    <text x="80" y="470" class="svg-sub tx-muted">AI rebuilds the slice; oracle &amp; diff-test catch drift</text>
+  </g>
+  <g><line x1="52" y1="474" x2="52" y2="486" class="stroke-dec sw1" marker-end="url(#arr)"/>
+     <text x="70" y="488" class="svg-sub tx-muted">⛔ exit criteria: diff-test matches legacy exactly</text></g>
+
+  <!-- S4 -->
+  <g>
+    <rect x="24" y="492" width="712" height="48" rx="10" class="fill-disp-soft stroke-disp sw2 dash"/>
+    <circle cx="52" cy="516" r="15" class="fill-disp"/>
+    <text x="52" y="521" text-anchor="middle" class="svg-label tx-white" font-weight="700">S4</text>
+    <text x="80" y="512" class="svg-label tx-ink" font-weight="700">Shadow live → canary cutover</text>
+    <text x="80" y="530" class="svg-sub tx-muted">Run beside legacy, then route a slice of real traffic</text>
+  </g>
+  <g><line x1="52" y1="540" x2="52" y2="552" class="stroke-dec sw1" marker-end="url(#arr)"/>
+     <text x="70" y="554" class="svg-sub tx-muted">⛔ exit criteria: canary healthy in production</text></g>
+
+  <!-- S5 -->
+  <g>
+    <rect x="24" y="558" width="712" height="48" rx="10" class="fill-disp-soft stroke-disp sw2 dash"/>
+    <circle cx="52" cy="582" r="15" class="fill-disp"/>
+    <text x="52" y="587" text-anchor="middle" class="svg-label tx-white" font-weight="700">S5</text>
+    <text x="80" y="578" class="svg-label tx-ink" font-weight="700">Delete legacy / contract schema / institutionalize</text>
+    <text x="80" y="596" class="svg-sub tx-muted">Retire the old code; lock the win into process</text>
+  </g>
+
+  <!-- count strip -->
+  <g>
+    <rect x="24" y="620" width="712" height="26" rx="13" class="fill-card stroke-line sw1"/>
+    <text x="180" y="637" text-anchor="middle" class="svg-sub tx-muted" font-weight="700">3 plumbing stages</text>
+    <text x="380" y="637" text-anchor="middle" class="svg-sub tx-muted">·</text>
+    <text x="380" y="637" text-anchor="middle" class="svg-sub tx-ink" font-weight="700"> 1 gate </text>
+    <text x="560" y="637" text-anchor="middle" class="svg-sub" font-weight="700" fill="var(--disp)">then 3 regeneration stages</text>
+  </g>
+</svg>
+</div></div><p class="point"><span class="pt">The point</span>Regeneration doesn&#x27;t begin until the 4th of 7 stages — everything before it is plumbing and proof, and decoupling the data (S-1) is the long pole.</p><div class="detail"><h3>In depth</h3><p>Seven stages — and the order <b>is</b> the discipline. The instinct is to jump straight to S3 (let the agent write code); resist it.</p>
+<ul>
+<li><b>S‑1 · Write mediation / decouple data</b> — the real long pole. Route every writer of contested rows through one mediation layer; contain transactions. Produces <b>zero</b> regenerated code and can take quarters. Tell leadership this up front.</li>
+<li><b>S0 · Cartography &amp; selection</b> — map from the DB change stream (not app traces); pick slice #1 by economics first, safety-feasibility second.</li>
+<li><b>S1 · Manufacture the durable layer + PROVE the oracle is complete</b> (card 9). Still no regeneration.</li>
+<li><b>S2 · Insert the seam</b> — a behavioural <i>and</i> performance no-op, routing defaulted to legacy.</li>
+<li><b>— THE GATE —</b> plumbing done, oracle proven; only now may code be regenerated.</li>
+<li><b>S3 · Regenerate + differential-test offline</b> — the <b>first</b> regeneration, stage 4 of 7.</li>
+<li><b>S4 · Shadow live → canary cutover</b> (card 11).</li>
+<li><b>S5 · Delete legacy, contract the schema, institutionalise.</b></li>
+</ul>
+<p>If you remember one thing: <b>regeneration is the last third of the work, not the first.</b></p></div></section>
+<section class="card"><div class="card-head"><div class="card-num">6</div><h2 class="card-title">Manufacture ownership before you regenerate</h2></div><div class="card-body"><div style="width:100%">
+<svg viewBox="0 0 760 470" width="100%" style="height:auto;display:block" font-family="inherit" role="img" aria-label="Before and after of a shared database: tangled direct writers versus a single write-mediation layer">
+
+  <!-- ============ column headers ============ -->
+  <text x="190" y="26" text-anchor="middle" class="svg-title tx-ink">BEFORE</text>
+  <text x="570" y="26" text-anchor="middle" class="svg-title tx-ink">AFTER</text>
+
+  <!-- divider -->
+  <line x1="380" y1="40" x2="380" y2="455" class="stroke-line sw1 dash"/>
+
+  <!-- ================================================= -->
+  <!-- ============ LEFT : tangled spaghetti =========== -->
+  <!-- ================================================= -->
+
+  <!-- 5 service writers -->
+  <g class="svg-sub tx-ink" text-anchor="middle">
+    <rect x="14"  y="56" width="92" height="32" rx="6" class="fill-card stroke-leg sw1"/>
+    <text x="60"  y="76">Service A</text>
+    <rect x="120" y="56" width="92" height="32" rx="6" class="fill-card stroke-leg sw1"/>
+    <text x="166" y="76">Service B</text>
+    <rect x="226" y="56" width="92" height="32" rx="6" class="fill-card stroke-leg sw1"/>
+    <text x="272" y="76">Service C</text>
+    <rect x="40"  y="100" width="92" height="32" rx="6" class="fill-card stroke-leg sw1"/>
+    <text x="86"  y="120">Cron job</text>
+    <rect x="200" y="100" width="92" height="32" rx="6" class="fill-card stroke-leg sw1"/>
+    <text x="246" y="120">Admin SQL</text>
+  </g>
+
+  <!-- tangled arrows: every writer stabs the blob directly -->
+  <g class="stroke-leg sw2" fill="none" marker-end="url(#arrLeg)">
+    <path d="M60 88  C 70 150, 120 200, 168 236"/>
+    <path d="M166 88 C 166 150, 178 200, 186 236"/>
+    <path d="M272 88 C 268 150, 230 200, 210 236"/>
+    <path d="M86 132 C 96 170, 150 210, 178 236"/>
+    <path d="M246 132 C 240 175, 215 205, 200 236"/>
+  </g>
+
+  <!-- shared schema blob -->
+  <ellipse cx="190" cy="300" rx="120" ry="58" class="fill-leg-soft stroke-leg sw2"/>
+  <text x="190" y="294" text-anchor="middle" class="svg-label tx-ink">Shared schema</text>
+  <text x="190" y="314" text-anchor="middle" class="svg-sub tx-muted">one tangled DB</text>
+
+  <!-- verdict -->
+  <g text-anchor="middle">
+    <text x="190" y="392" class="svg-label fill-dan" font-weight="700">✕ Nothing owns anything</text>
+    <text x="190" y="412" class="svg-sub tx-muted">can't safely regenerate</text>
+  </g>
+
+  <!-- ================================================= -->
+  <!-- ============ RIGHT : mediated =================== -->
+  <!-- ================================================= -->
+
+  <!-- same writers -->
+  <g class="svg-sub tx-ink" text-anchor="middle">
+    <rect x="410" y="56" width="84" height="30" rx="6" class="fill-card stroke-leg sw1"/>
+    <text x="452" y="75">Service A</text>
+    <rect x="500" y="56" width="84" height="30" rx="6" class="fill-card stroke-leg sw1"/>
+    <text x="542" y="75">Service B</text>
+    <rect x="590" y="56" width="84" height="30" rx="6" class="fill-card stroke-leg sw1"/>
+    <text x="632" y="75">Service C</text>
+    <rect x="455" y="94" width="84" height="30" rx="6" class="fill-card stroke-leg sw1"/>
+    <text x="497" y="113">Cron job</text>
+    <rect x="545" y="94" width="84" height="30" rx="6" class="fill-card stroke-leg sw1"/>
+    <text x="587" y="113">Admin SQL</text>
+  </g>
+
+  <!-- ordered arrows all converging on the one door -->
+  <g class="stroke-leg sw1" fill="none" marker-end="url(#arrLeg)">
+    <path d="M452 86  C 452 120, 500 150, 540 168"/>
+    <path d="M542 86  C 542 120, 555 150, 562 168"/>
+    <path d="M632 86  C 632 130, 600 150, 584 168"/>
+    <path d="M497 124 C 510 145, 535 158, 548 168"/>
+    <path d="M587 124 C 587 145, 580 158, 576 168"/>
+  </g>
+
+  <!-- the single door : write-mediation layer -->
+  <rect x="436" y="172" width="268" height="46" rx="8" class="fill-dur stroke-dur sw2"/>
+  <text x="570" y="195" text-anchor="middle" class="svg-label tx-white" font-weight="700">Write-mediation layer</text>
+  <text x="570" y="210" text-anchor="middle" class="svg-sub tx-white">the only door in</text>
+
+  <!-- single mediated arrow down to owned views -->
+  <line x1="570" y1="218" x2="570" y2="250" class="stroke-dur sw2" marker-end="url(#arrDur)"/>
+
+  <!-- owned views -->
+  <rect x="476" y="252" width="188" height="38" rx="6" class="fill-dur-soft stroke-dur sw2"/>
+  <text x="570" y="276" text-anchor="middle" class="svg-label tx-ink">Owned views</text>
+
+  <!-- arrow into rows -->
+  <line x1="570" y1="290" x2="570" y2="316" class="stroke-dur sw2" marker-end="url(#arrDur)"/>
+
+  <!-- the rows -->
+  <ellipse cx="570" cy="350" rx="96" ry="36" class="fill-dur-soft stroke-dur sw2"/>
+  <text x="570" y="355" text-anchor="middle" class="svg-label tx-ink">The rows</text>
+
+  <!-- verdict -->
+  <g text-anchor="middle">
+    <text x="570" y="412" class="svg-label fill-dur" font-weight="700">✓ Ownership manufactured</text>
+    <text x="570" y="432" class="svg-sub tx-muted">now a slice can regenerate</text>
+  </g>
+
+  <!-- arrow markers -->
+  <defs>
+    <marker id="arrLeg" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0 0 L6 3 L0 6 z" class="fill-leg"/>
+    </marker>
+    <marker id="arrDur" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto">
+      <path d="M0 0 L7 3 L0 6 z" class="fill-dur"/>
+    </marker>
+  </defs>
+
+</svg>
+</div></div><p class="point"><span class="pt">The point</span>On a shared database nothing owns the data, so you route every writer through one mediation layer to manufacture ownership before a slice can be safely regenerated.</p><div class="detail"><h3>In depth</h3><p>The shared database — not the code — is the boss fight. On a big-ball-of-mud schema many services read and write the same rows directly, so nothing owns anything and you can't safely change a slice's data behaviour.</p>
+<p>The fix is to <b>manufacture ownership without physically splitting the database</b>:</p>
+<ul>
+<li>Stand up change-data-capture (WAL/CDC) to find the <b>true transitive write-set</b> — triggers, stored procs, FK cascades, materialised views — all invisible to app-level tracing.</li>
+<li>Census every co-writer and co-reader from <b>DB grants + the data dictionary + a credential audit</b>.</li>
+<li>Route <b>all</b> of them through a single <b>write-mediation service</b> — the only door to those rows.</li>
+<li>Each slice then reads and writes only through owned views / repositories.</li>
+</ul>
+<p>Only mediated, transaction-contained columns are eligible to host a regenerated slice.</p></div></section>
+<section class="card"><div class="card-head"><div class="card-num">7</div><h2 class="card-title">Expand–Contract: Schema Change Without Breaking</h2></div><div class="card-body"><div style="width:100%">
+<svg viewBox="0 0 760 360" width="100%" role="img" aria-label="Four-step expand, migrate, shadow-verify, contract schema flow" style="font-family:inherit">
+  <defs>
+    <marker id="ec-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" class="fill-dec"/>
+    </marker>
+  </defs>
+
+  <!-- step number band -->
+  <g class="svg-sub tx-muted">
+    <text x="95"  y="22" text-anchor="middle">STEP 1</text>
+    <text x="285" y="22" text-anchor="middle">STEP 2</text>
+    <text x="475" y="22" text-anchor="middle">STEP 3</text>
+    <text x="665" y="22" text-anchor="middle">STEP 4</text>
+  </g>
+
+  <!-- ============ STEP 1 — EXPAND ============ -->
+  <g>
+    <rect x="20" y="34" width="150" height="232" rx="12" class="fill-card stroke-line sw1"/>
+    <text x="95" y="56" text-anchor="middle" class="svg-label tx-ink" font-weight="700">EXPAND</text>
+    <text x="95" y="73" text-anchor="middle" class="svg-sub tx-muted">add new, additive</text>
+
+    <!-- old col stays -->
+    <rect x="38" y="92" width="52" height="150" rx="7" class="fill-leg-soft stroke-leg sw1"/>
+    <text x="64" y="118" text-anchor="middle" class="svg-sub tx-ink" font-weight="700">old</text>
+    <line x1="46" y1="135" x2="82" y2="135" class="stroke-leg sw1"/>
+    <line x1="46" y1="155" x2="82" y2="155" class="stroke-leg sw1"/>
+    <line x1="46" y1="175" x2="82" y2="175" class="stroke-leg sw1"/>
+
+    <!-- new col added (dashed = freshly created) -->
+    <rect x="100" y="92" width="52" height="150" rx="7" class="fill-dur-soft stroke-dur sw1 dash"/>
+    <text x="126" y="118" text-anchor="middle" class="svg-sub tx-ink" font-weight="700">new</text>
+    <line x1="108" y1="135" x2="144" y2="135" class="stroke-dur sw1"/>
+    <line x1="108" y1="155" x2="144" y2="155" class="stroke-dur sw1"/>
+
+    <text x="95" y="258" text-anchor="middle" class="svg-sub tx-dur" font-weight="700">✓ nothing breaks</text>
+  </g>
+
+  <line x1="172" y1="150" x2="196" y2="150" class="stroke-dec sw2" marker-end="url(#ec-arrow)"/>
+
+  <!-- ============ STEP 2 — MIGRATE ============ -->
+  <g>
+    <rect x="210" y="34" width="150" height="232" rx="12" class="fill-card stroke-line sw1"/>
+    <text x="285" y="56" text-anchor="middle" class="svg-label tx-ink" font-weight="700">MIGRATE</text>
+    <text x="285" y="73" text-anchor="middle" class="svg-sub tx-muted">dual-write + backfill</text>
+
+    <rect x="228" y="92" width="52" height="150" rx="7" class="fill-leg-soft stroke-leg sw1"/>
+    <text x="254" y="118" text-anchor="middle" class="svg-sub tx-ink" font-weight="700">old</text>
+
+    <rect x="290" y="92" width="52" height="150" rx="7" class="fill-dur-soft stroke-dur sw2"/>
+    <text x="316" y="118" text-anchor="middle" class="svg-sub tx-ink" font-weight="700">new</text>
+
+    <!-- dual-write fork -->
+    <text x="285" y="160" text-anchor="middle" class="svg-sub tx-ink" font-weight="700">write</text>
+    <line x1="285" y1="168" x2="256" y2="190" class="stroke-dec sw1" marker-end="url(#ec-arrow)"/>
+    <line x1="285" y1="168" x2="314" y2="190" class="stroke-dec sw1" marker-end="url(#ec-arrow)"/>
+
+    <text x="285" y="258" text-anchor="middle" class="svg-sub tx-muted">writes go to both</text>
+  </g>
+
+  <line x1="362" y1="150" x2="386" y2="150" class="stroke-dec sw2" marker-end="url(#ec-arrow)"/>
+
+  <!-- ============ STEP 3 — SHADOW-VERIFY ============ -->
+  <g>
+    <rect x="400" y="34" width="150" height="232" rx="12" class="fill-card stroke-line sw1"/>
+    <text x="475" y="56" text-anchor="middle" class="svg-label tx-ink" font-weight="700">SHADOW-VERIFY</text>
+    <text x="475" y="73" text-anchor="middle" class="svg-sub tx-muted">CDC reconciliation</text>
+
+    <rect x="418" y="100" width="52" height="86" rx="7" class="fill-leg-soft stroke-leg sw1"/>
+    <text x="444" y="148" text-anchor="middle" class="svg-sub tx-ink" font-weight="700">old</text>
+
+    <rect x="480" y="100" width="52" height="86" rx="7" class="fill-dur-soft stroke-dur sw2"/>
+    <text x="506" y="148" text-anchor="middle" class="svg-sub tx-ink" font-weight="700">new</text>
+
+    <!-- compare -->
+    <line x1="470" y1="143" x2="480" y2="143" class="stroke-dec sw1" stroke-dasharray="2 3"/>
+    <text x="475" y="130" text-anchor="middle" class="svg-sub tx-muted">=</text>
+
+    <rect x="418" y="200" width="114" height="44" rx="8" class="fill-dur-soft stroke-dur sw2"/>
+    <text x="475" y="219" text-anchor="middle" class="svg-sub tx-dur" font-weight="700">✓ zero drift</text>
+    <text x="475" y="235" text-anchor="middle" class="svg-sub tx-muted">old ≡ new, live</text>
+  </g>
+
+  <line x1="552" y1="150" x2="576" y2="150" class="stroke-dec sw2" marker-end="url(#ec-arrow)"/>
+
+  <!-- ============ STEP 4 — CONTRACT ============ -->
+  <g>
+    <rect x="590" y="34" width="150" height="232" rx="12" class="fill-card stroke-line sw1"/>
+    <text x="665" y="56" text-anchor="middle" class="svg-label tx-ink" font-weight="700">CONTRACT</text>
+    <text x="665" y="73" text-anchor="middle" class="svg-sub tx-muted">remove old, at last</text>
+
+    <!-- read tripwire guard (amber caveat) BEFORE removal -->
+    <rect x="606" y="88" width="118" height="40" rx="8" class="fill-warn-soft stroke-warn sw2"/>
+    <text x="665" y="105" text-anchor="middle" class="svg-sub tx-ink" font-weight="700">read-tripwire</text>
+    <text x="665" y="120" text-anchor="middle" class="svg-sub tx-muted">0 readers?</text>
+
+    <!-- old removed -->
+    <g>
+      <rect x="616" y="146" width="44" height="96" rx="7" class="fill-leg-soft stroke-leg sw1 dash"/>
+      <text x="638" y="170" text-anchor="middle" class="svg-sub tx-muted" font-weight="700">old</text>
+      <line x1="618" y1="148" x2="658" y2="240" class="stroke-dan sw2"/>
+      <line x1="658" y1="148" x2="618" y2="240" class="stroke-dan sw2"/>
+      <text x="638" y="235" text-anchor="middle" class="svg-sub tx-dan" font-weight="700">✕ dropped</text>
+    </g>
+
+    <!-- new alone -->
+    <rect x="672" y="146" width="52" height="96" rx="7" class="fill-dur-soft stroke-dur sw2"/>
+    <text x="698" y="170" text-anchor="middle" class="svg-sub tx-ink" font-weight="700">new</text>
+    <line x1="680" y1="188" x2="716" y2="188" class="stroke-dur sw1"/>
+    <line x1="680" y1="208" x2="716" y2="208" class="stroke-dur sw1"/>
+  </g>
+
+  <!-- bottom legend -->
+  <g class="svg-sub">
+    <rect x="20"  y="320" width="16" height="12" rx="3" class="fill-leg-soft stroke-leg sw1"/>
+    <text x="42"  y="330" class="tx-muted">old / legacy schema</text>
+    <rect x="200" y="320" width="16" height="12" rx="3" class="fill-dur-soft stroke-dur sw2"/>
+    <text x="222" y="330" class="tx-muted">new / durable schema</text>
+    <rect x="380" y="320" width="16" height="12" rx="3" class="fill-warn-soft stroke-warn sw2"/>
+    <text x="402" y="330" class="tx-muted">guard before removal</text>
+    <line x1="565" y1="320" x2="581" y2="332" class="stroke-dan sw2"/>
+    <line x1="581" y1="320" x2="565" y2="332" class="stroke-dan sw2"/>
+    <text x="588" y="330" class="tx-muted">only then drop old</text>
+  </g>
+</svg>
+</div></div><p class="point"><span class="pt">The point</span>Never break the data: add the new schema additively, run old and new in parallel, prove zero drift, and only then remove the old.</p><div class="detail"><h3>In depth</h3><p>You change the schema additively and reversibly — never destructively:</p>
+<ul>
+<li><b>Expand</b> — add the new column/table alongside the old. Nothing breaks; existing readers keep working.</li>
+<li><b>Migrate</b> — dual-write to old and new; backfill historical rows.</li>
+<li><b>Shadow-verify</b> — reconcile old vs new continuously via CDC; require <b>zero drift</b>.</li>
+<li><b>Contract</b> — drop the old <b>only</b> after a DB-level read-tripwire proves zero readers across the longest external cadence (quarterly regulatory extracts, not last week).</li>
+</ul>
+<p>This is why a rollback should <b>never</b> require a data migration — if it does, expand/contract was violated. Co-writer migration is a fleet-wide dependency scheduled <i>before</i> a slice's cutover, not a per-slice afterthought.</p></div></section>
+<section class="card"><div class="card-head"><div class="card-num">8</div><h2 class="card-title">The Oracle Replaces Lost Determinism</h2></div><div class="card-body"><div class="oracle-wrap">
+<svg viewBox="0 0 760 470" width="100%" style="height:auto;display:block" role="img" aria-label="A four-layer durable test oracle stack that judges regenerated code">
+  <defs>
+    <marker id="ar-ink" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" class="fill-dur"/>
+    </marker>
+    <marker id="ar-dec" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" class="fill-dec"/>
+    </marker>
+  </defs>
+
+  <!-- ============ TITLE STRIP ============ -->
+  <text x="30" y="34" class="svg-title tx-ink">The test oracle = the deterministic judge</text>
+
+  <!-- ============ STACK (bottom-to-top, layers 1..4) ============ -->
+  <!-- geometry: 4 layers, each 70 tall, gap 10; stack region x:30..520 -->
+
+  <!-- Layer 4 (TOP) — Compliance oracle (amber caveat) -->
+  <g>
+    <rect x="30" y="64" width="490" height="70" rx="10" class="fill-warn-soft stroke-warn sw2"/>
+    <circle cx="62" cy="99" r="15" class="fill-warn"/>
+    <text x="62" y="104" text-anchor="middle" class="svg-label tx-white" style="font-weight:700">4</text>
+    <text x="92" y="92" class="svg-label tx-ink" style="font-weight:700">Compliance oracle</text>
+    <text x="92" y="108" class="svg-sub tx-muted">regulated only</text>
+    <text x="92" y="123" class="svg-sub tx-ink" style="font-weight:600">can FAIL what equivalence passes</text>
+  </g>
+
+  <!-- Layer 3 — Legacy-mutation completeness gate (HIGHLIGHTED, decision/purple ring) -->
+  <g>
+    <rect x="22" y="138" width="506" height="78" rx="11" class="fill-dur-soft stroke-dec sw2"/>
+    <rect x="22" y="138" width="506" height="78" rx="11" fill="none" class="stroke-dec sw1 dash"/>
+    <circle cx="62" cy="177" r="15" class="fill-dur"/>
+    <text x="62" y="182" text-anchor="middle" class="svg-label tx-white" style="font-weight:700">3</text>
+    <text x="92" y="167" class="svg-label tx-ink" style="font-weight:700">Legacy-mutation completeness gate</text>
+    <text x="92" y="184" class="svg-sub tx-ink">break the legacy on purpose &rarr; tests must catch it</text>
+    <text x="92" y="200" class="svg-sub tx-ink" style="font-weight:700" fill="var(--dec)">proves the tests have teeth</text>
+    <!-- highlight tag -->
+    <g>
+      <rect x="438" y="148" width="82" height="22" rx="11" class="fill-dec"/>
+      <text x="479" y="163" text-anchor="middle" class="svg-sub tx-white" style="font-weight:700">KEYSTONE</text>
+    </g>
+  </g>
+
+  <!-- Layer 2 — Property + metamorphic invariants -->
+  <g>
+    <rect x="30" y="220" width="490" height="70" rx="10" class="fill-dur-soft stroke-dur sw2"/>
+    <circle cx="62" cy="255" r="15" class="fill-dur"/>
+    <text x="62" y="260" text-anchor="middle" class="svg-label tx-white" style="font-weight:700">2</text>
+    <text x="92" y="248" class="svg-label tx-ink" style="font-weight:700">Property + metamorphic invariants</text>
+    <text x="92" y="266" class="svg-sub tx-ink">rules that survive a rewrite</text>
+    <text x="92" y="281" class="svg-sub tx-muted">e.g. totals reconcile, order can't go negative</text>
+  </g>
+
+  <!-- Layer 1 (BOTTOM, foundation) — Characterization corpus -->
+  <g>
+    <rect x="30" y="294" width="490" height="74" rx="10" class="fill-dur stroke-dur sw2"/>
+    <circle cx="62" cy="331" r="15" class="fill-card"/>
+    <text x="62" y="336" text-anchor="middle" class="svg-label" style="font-weight:700" fill="var(--dur)">1</text>
+    <text x="92" y="322" class="svg-label tx-white" style="font-weight:700">Characterization corpus</text>
+    <text x="92" y="339" class="svg-sub tx-white">real production traffic, recorded</text>
+    <text x="92" y="355" class="svg-sub tx-white" style="font-weight:700">over the LONGEST business cycle</text>
+  </g>
+
+  <!-- foundation baseline -->
+  <text x="30" y="388" class="svg-sub tx-muted">durable foundation &mdash; the more real traffic, the stronger the judge</text>
+
+  <!-- ============ JUDGEMENT FLOW (right column) ============ -->
+  <!-- regenerated code enters from the right, oracle judges -->
+  <g>
+    <rect x="560" y="80" width="172" height="58" rx="10" fill="none" class="stroke-disp sw2 dash"/>
+    <text x="646" y="106" text-anchor="middle" class="svg-label" style="font-weight:700" fill="var(--disp)">Regenerated</text>
+    <text x="646" y="123" text-anchor="middle" class="svg-sub" fill="var(--disp)">disposable code</text>
+  </g>
+
+  <!-- arrow: code -> oracle -->
+  <path d="M560,150 C500,170 500,170 532,176" fill="none" class="stroke-dur sw2" marker-end="url(#ar-ink)"/>
+  <text x="556" y="166" text-anchor="end" class="svg-sub tx-muted">judged by</text>
+
+  <!-- differential testing note -->
+  <g>
+    <rect x="560" y="178" width="172" height="92" rx="10" class="fill-card stroke-line sw1"/>
+    <text x="646" y="201" text-anchor="middle" class="svg-sub tx-ink" style="font-weight:700">Differential test</text>
+    <text x="646" y="220" text-anchor="middle" class="svg-sub tx-muted">old &amp; new run the</text>
+    <text x="646" y="234" text-anchor="middle" class="svg-sub tx-muted">same corpus</text>
+    <text x="646" y="253" text-anchor="middle" class="svg-sub tx-ink" style="font-weight:700">outputs must match</text>
+    <text x="646" y="266" text-anchor="middle" class="svg-sub tx-muted">no human eyeballing</text>
+  </g>
+
+  <!-- verdicts -->
+  <g>
+    <rect x="560" y="288" width="82" height="56" rx="10" class="fill-dur-soft stroke-dur sw2"/>
+    <text x="601" y="312" text-anchor="middle" class="svg-label" style="font-weight:700" fill="var(--dur)">&#10003;</text>
+    <text x="601" y="332" text-anchor="middle" class="svg-sub tx-ink" style="font-weight:700">SHIP</text>
+  </g>
+  <g>
+    <rect x="650" y="288" width="82" height="56" rx="10" class="fill-dan-soft stroke-dan sw2"/>
+    <text x="691" y="312" text-anchor="middle" class="svg-label" style="font-weight:700" fill="var(--dan)">&#10007;</text>
+    <text x="691" y="332" text-anchor="middle" class="svg-sub tx-ink" style="font-weight:700">REJECT</text>
+  </g>
+
+  <!-- ============ SIDE LABEL: non-determinism -> deterministic judge ============ -->
+  <g>
+    <rect x="30" y="406" width="702" height="48" rx="10" class="fill-dec-soft stroke-dec sw1"/>
+    <circle cx="58" cy="430" r="11" class="fill-dec"/>
+    <text x="58" y="435" text-anchor="middle" class="svg-sub tx-white" style="font-weight:700">!</text>
+    <text x="80" y="426" class="svg-sub tx-ink" style="font-weight:700">An LLM is non-deterministic.</text>
+    <text x="80" y="444" class="svg-sub tx-ink">So a DETERMINISTIC oracle is the judge &mdash; not a human eyeballing diffs.</text>
+  </g>
+</svg>
+</div>
+<style>
+  .oracle-wrap{ width:100%; }
+  .oracle-wrap text{ font-family: inherit; }
+</style></div><p class="point"><span class="pt">The point</span>The LLM that wrote the code isn&#x27;t deterministic, so a deterministic 4-layer oracle — not a human eyeballing diffs — decides whether each regeneration is correct.</p><div class="detail"><h3>In depth</h3><p>An LLM regeneration is non-deterministic — so a <b>deterministic oracle</b>, not a human reading a diff, decides whether a regen is correct. Four layers:</p>
+<ul>
+<li><b>Characterisation / golden-master</b> — captured production I/O over the <b>longest business cycle</b> the slice touches (year-end, month-end), plus synthesised rare-event rows.</li>
+<li><b>Property + metamorphic invariants</b> — implementation-independent rules that survive a full rewrite (example-based unit tests don't).</li>
+<li><b>The legacy-mutation completeness gate</b> — card 9; the only non-circular proof the oracle actually has teeth.</li>
+<li><b>(Regulated only) an independent compliance oracle</b> that can <b>fail</b> a behaviour the equivalence oracle passes.</li>
+</ul>
+<p><b>Precedence:</b> the corpus (what it "does") beats an authored invariant (what it "should") by default; conflicts are promoted to a named "suspected load-bearing bug" for human adjudication — never silently muted. Equivalence defaults to <b>exact</b>; every downgraded field is a signed, reviewed canonicalisation.</p></div></section>
+<section class="card"><div class="card-head"><div class="card-num">9</div><h2 class="card-title">Matching legacy proves consistency, not correctness</h2></div><div class="card-body"><style>
+  .mg-wrap{width:100%;}
+  .mg-svg{width:100%;height:auto;display:block;}
+  .mg-eq{font-weight:700;}
+</style>
+<div class="mg-wrap">
+<svg class="mg-svg" viewBox="0 0 760 470" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two panels: matching legacy gives false-confidence green; mutating the legacy is the real test">
+
+  <!-- ============ LEFT PANEL: FALSE CONFIDENCE ============ -->
+  <g>
+    <!-- panel frame -->
+    <rect x="14" y="14" width="350" height="442" rx="14" class="fill-dan-soft stroke-dan sw1"/>
+
+    <!-- header -->
+    <circle cx="44" cy="46" r="13" class="fill-dan"/>
+    <text x="44" y="51" text-anchor="middle" class="svg-label tx-white" font-weight="700">✕</text>
+    <text x="66" y="44" class="svg-title tx-ink">FALSE CONFIDENCE</text>
+    <text x="66" y="60" class="svg-sub tx-muted">just matching the old system</text>
+
+    <!-- LEGACY box -->
+    <rect x="40" y="86" width="130" height="58" rx="9" class="fill-leg-soft stroke-leg sw2"/>
+    <text x="105" y="110" text-anchor="middle" class="svg-label tx-ink" font-weight="700">LEGACY</text>
+    <text x="105" y="128" text-anchor="middle" class="svg-sub tx-muted">old output</text>
+
+    <!-- REGEN box -->
+    <rect x="208" y="86" width="130" height="58" rx="9" class="fill-disp-soft stroke-disp sw2 dash"/>
+    <text x="273" y="110" text-anchor="middle" class="svg-label tx-ink" font-weight="700">REGEN</text>
+    <text x="273" y="128" text-anchor="middle" class="svg-sub tx-muted">new output</text>
+
+    <!-- equals between them -->
+    <text x="189" y="121" text-anchor="middle" class="svg-title tx-ink mg-eq">=</text>
+
+    <!-- arrow down to green -->
+    <line x1="189" y1="150" x2="189" y2="186" class="stroke-line sw2"/>
+    <polygon points="189,196 183,184 195,184" class="fill-line"/>
+
+    <!-- GREEN result -->
+    <rect x="104" y="200" width="170" height="50" rx="9" class="fill-dur stroke-dur sw2"/>
+    <text x="189" y="231" text-anchor="middle" class="svg-label tx-white" font-weight="700">✓ GREEN</text>
+
+    <!-- the trap caption -->
+    <line x1="189" y1="256" x2="189" y2="286" class="stroke-dan sw2 dash"/>
+    <polygon points="189,296 183,284 195,284" class="fill-dan"/>
+
+    <rect x="34" y="304" width="310" height="138" rx="10" class="fill-card stroke-dan sw1 dash"/>
+    <text x="189" y="332" text-anchor="middle" class="svg-label tx-ink" font-weight="700">Proves CONSISTENCY,</text>
+    <text x="189" y="352" text-anchor="middle" class="svg-label tx-ink" font-weight="700">not COMPLETENESS</text>
+    <line x1="64" y1="368" x2="314" y2="368" class="stroke-line sw1"/>
+    <text x="189" y="392" text-anchor="middle" class="svg-sub tx-muted">If the legacy already has a bug,</text>
+    <text x="189" y="409" text-anchor="middle" class="svg-sub tx-muted">the regen copies it — and stays</text>
+    <text x="189" y="426" text-anchor="middle" class="svg-sub tx-ink" font-weight="700">green, blind to the bug.</text>
+  </g>
+
+  <!-- divider -->
+  <line x1="385" y1="40" x2="385" y2="430" class="stroke-line sw1 dash"/>
+
+  <!-- ============ RIGHT PANEL: THE FIX ============ -->
+  <g>
+    <!-- panel frame -->
+    <rect x="406" y="14" width="340" height="442" rx="14" class="fill-dur-soft stroke-dur sw1"/>
+
+    <!-- header -->
+    <circle cx="436" cy="46" r="13" class="fill-dur"/>
+    <text x="436" y="51" text-anchor="middle" class="svg-label tx-white" font-weight="700">✓</text>
+    <text x="458" y="44" class="svg-title tx-ink">THE FIX: MUTATE LEGACY</text>
+    <text x="458" y="60" class="svg-sub tx-muted">test the tests, not the code</text>
+
+    <!-- LEGACY with injected mutant -->
+    <rect x="430" y="86" width="150" height="62" rx="9" class="fill-leg-soft stroke-leg sw2"/>
+    <text x="505" y="110" text-anchor="middle" class="svg-label tx-ink" font-weight="700">LEGACY</text>
+    <text x="505" y="128" text-anchor="middle" class="svg-sub tx-muted">deliberately broken</text>
+    <!-- mutant badge -->
+    <circle cx="580" cy="86" r="17" class="fill-warn stroke-card sw2"/>
+    <text x="580" y="91" text-anchor="middle" class="svg-sub tx-ink" font-weight="700">MUT</text>
+    <text x="505" y="170" text-anchor="middle" class="svg-sub tx-warn" font-weight="700">inject behavior-changing mutant</text>
+
+    <!-- arrow into harness -->
+    <line x1="640" y1="117" x2="690" y2="117" class="stroke-warn sw2"/>
+    <polygon points="700,117 688,111 688,123" class="fill-warn"/>
+    <text x="668" y="106" text-anchor="middle" class="svg-sub tx-muted">↻</text>
+
+    <!-- TEST HARNESS box -->
+    <rect x="430" y="188" width="290" height="56" rx="9" class="fill-dur stroke-dur sw2"/>
+    <text x="575" y="213" text-anchor="middle" class="svg-label tx-white" font-weight="700">TEST ORACLE / HARNESS</text>
+    <text x="575" y="231" text-anchor="middle" class="svg-sub tx-white">runs against the broken legacy</text>
+
+    <!-- must turn RED -->
+    <line x1="575" y1="250" x2="575" y2="286" class="stroke-line sw2"/>
+    <polygon points="575,296 569,284 581,284" class="fill-line"/>
+
+    <rect x="490" y="300" width="170" height="50" rx="9" class="fill-dan stroke-dan sw2"/>
+    <text x="575" y="331" text-anchor="middle" class="svg-label tx-white" font-weight="700">✕ MUST GO RED</text>
+
+    <!-- verdict caption -->
+    <rect x="426" y="368" width="300" height="74" rx="10" class="fill-card stroke-dur sw1"/>
+    <text x="576" y="392" text-anchor="middle" class="svg-sub tx-ink" font-weight="700">Stays green? Your tests are BLIND.</text>
+    <text x="576" y="412" text-anchor="middle" class="svg-sub tx-muted">Surviving mutants =</text>
+    <text x="576" y="429" text-anchor="middle" class="svg-sub tx-ink" font-weight="700">your exact blind spots.</text>
+  </g>
+
+</svg>
+</div></div><p class="point"><span class="pt">The point</span>Matching the old system only proves you copied it — to prove your tests can actually catch bugs, deliberately break the legacy and require your harness to turn red.</p><div class="detail"><h3>In depth</h3><p>The seductive trap: your regen produces the same output as the legacy, the tests are green, ship it. But <b>"green against the incumbent" only proves consistency, not completeness</b>. If the legacy has a bug, the regen copies it and the tests stay green — blind to it. On its own this is a false-confidence machine that launders unknown bugs into freshly-attested production code.</p>
+<p>The fix is <b>mutation testing against the legacy</b>: deliberately inject behaviour-changing mutants <b>into the incumbent</b> and require your harness to turn <b>red</b>. If it stays green, your tests can't see that behaviour — every surviving mutant is a <b>measured blind spot</b> that must be reviewed before the slice is eligible.</p>
+<p>This is the single most-skipped and most-important step in the whole model.</p></div></section>
+<section class="card"><div class="card-head"><div class="card-num">10</div><h2 class="card-title">Manufacturing The Durable Layer</h2></div><div class="card-body"><div style="width:100%">
+  <svg viewBox="0 0 760 470" width="100%" style="height:auto;display:block" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The five durable artifacts and how a brownfield harvests them backward from the live system">
+    <defs>
+      <marker id="arrFwd" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0 0 L10 5 L0 10 z" class="fill-dur"/>
+      </marker>
+      <marker id="arrBack" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0 0 L10 5 L0 10 z" class="fill-leg"/>
+      </marker>
+    </defs>
+
+    <!-- ===== THE FIVE DURABLE ARTIFACTS (all teal) ===== -->
+    <g>
+      <!-- column geometry: 5 columns, x = 16,164,312,460,608 ; width 136 -->
+      <!-- SPEC -->
+      <g>
+        <rect x="16" y="40" width="136" height="150" rx="9" class="fill-dur-soft stroke-dur sw2"/>
+        <rect x="16" y="40" width="136" height="34" rx="9" class="fill-dur"/>
+        <rect x="16" y="60" width="136" height="14" class="fill-dur"/>
+        <text x="84" y="62" text-anchor="middle" class="svg-label tx-white" style="font-weight:700">SPEC</text>
+        <text x="84" y="98" text-anchor="middle" class="svg-sub tx-ink">harvested from</text>
+        <text x="84" y="113" text-anchor="middle" class="svg-sub tx-ink">running behavior</text>
+        <line x1="34" y1="126" x2="134" y2="126" class="stroke-line sw1"/>
+        <text x="84" y="146" text-anchor="middle" class="svg-sub tx-muted">owner</text>
+        <text x="84" y="161" text-anchor="middle" class="svg-sub tx-muted" style="font-weight:700">CORRECTS</text>
+        <text x="84" y="176" text-anchor="middle" class="svg-sub tx-muted">the draft</text>
+      </g>
+      <!-- CONTRACTS -->
+      <g>
+        <rect x="164" y="40" width="136" height="150" rx="9" class="fill-dur-soft stroke-dur sw2"/>
+        <rect x="164" y="40" width="136" height="34" rx="9" class="fill-dur"/>
+        <rect x="164" y="60" width="136" height="14" class="fill-dur"/>
+        <text x="232" y="62" text-anchor="middle" class="svg-label tx-white" style="font-weight:700">CONTRACTS</text>
+        <text x="232" y="98" text-anchor="middle" class="svg-sub tx-ink">from DB grants</text>
+        <text x="232" y="113" text-anchor="middle" class="svg-sub tx-ink">+ change-data</text>
+        <line x1="182" y1="126" x2="282" y2="126" class="stroke-line sw1"/>
+        <text x="232" y="150" text-anchor="middle" class="svg-sub tx-muted">NOT from</text>
+        <text x="232" y="165" text-anchor="middle" class="svg-sub tx-muted">app traces</text>
+      </g>
+      <!-- TESTS -->
+      <g>
+        <rect x="312" y="40" width="136" height="150" rx="9" class="fill-dur-soft stroke-dur sw2"/>
+        <rect x="312" y="40" width="136" height="34" rx="9" class="fill-dur"/>
+        <rect x="312" y="60" width="136" height="14" class="fill-dur"/>
+        <text x="380" y="62" text-anchor="middle" class="svg-label tx-white" style="font-weight:700">TESTS</text>
+        <text x="380" y="102" text-anchor="middle" class="svg-sub tx-ink" style="font-weight:700">the 4-layer</text>
+        <text x="380" y="117" text-anchor="middle" class="svg-sub tx-ink" style="font-weight:700">oracle</text>
+        <line x1="330" y1="130" x2="430" y2="130" class="stroke-line sw1"/>
+        <text x="380" y="151" text-anchor="middle" class="svg-sub tx-muted">replaces lost</text>
+        <text x="380" y="166" text-anchor="middle" class="svg-sub tx-muted">determinism</text>
+      </g>
+      <!-- SCHEMA -->
+      <g>
+        <rect x="460" y="40" width="136" height="150" rx="9" class="fill-dur-soft stroke-dur sw2"/>
+        <rect x="460" y="40" width="136" height="34" rx="9" class="fill-dur"/>
+        <rect x="460" y="60" width="136" height="14" class="fill-dur"/>
+        <text x="528" y="62" text-anchor="middle" class="svg-label tx-white" style="font-weight:700">SCHEMA</text>
+        <text x="528" y="98" text-anchor="middle" class="svg-sub tx-ink">owned views</text>
+        <line x1="478" y1="112" x2="578" y2="112" class="stroke-line sw1"/>
+        <text x="528" y="135" text-anchor="middle" class="svg-sub tx-muted">expand /</text>
+        <text x="528" y="150" text-anchor="middle" class="svg-sub tx-muted" style="font-weight:700">contract</text>
+        <text x="528" y="172" text-anchor="middle" class="svg-sub tx-muted">migrations</text>
+      </g>
+      <!-- PERFORMANCE -->
+      <g>
+        <rect x="608" y="40" width="136" height="150" rx="9" class="fill-dur-soft stroke-dur sw2"/>
+        <rect x="608" y="40" width="136" height="34" rx="9" class="fill-dur"/>
+        <rect x="608" y="60" width="136" height="14" class="fill-dur"/>
+        <text x="676" y="62" text-anchor="middle" class="svg-label tx-white" style="font-weight:700">PERFORMANCE</text>
+        <text x="676" y="94" text-anchor="middle" class="svg-sub tx-dur" style="fill:var(--dur);font-weight:700">the 5th artifact</text>
+        <text x="676" y="116" text-anchor="middle" class="svg-sub tx-ink">gated in CI</text>
+        <line x1="626" y1="130" x2="726" y2="130" class="stroke-line sw1"/>
+        <text x="676" y="151" text-anchor="middle" class="svg-sub tx-muted">co-equal with</text>
+        <text x="676" y="166" text-anchor="middle" class="svg-sub tx-muted">correctness</text>
+      </g>
+    </g>
+
+    <!-- caption above the row -->
+    <text x="16" y="28" class="svg-label tx-ink" style="font-weight:700">5 DURABLE ARTIFACTS — the layer you protect</text>
+    <text x="380" y="28" text-anchor="middle" class="svg-sub tx-muted" style="opacity:0"> </text>
+
+    <!-- ===== CONTRAST: forward vs backward ===== -->
+    <!-- GREENFIELD authors FORWARD (teal, down into artifacts) -->
+    <g>
+      <rect x="16" y="232" width="340" height="50" rx="9" class="fill-dur-soft stroke-dur sw2"/>
+      <text x="40" y="254" class="svg-label" style="fill:var(--dur);font-weight:700">GREENFIELD</text>
+      <text x="40" y="272" class="svg-sub tx-ink">authors them FORWARD</text>
+      <text x="186" y="263" text-anchor="middle" class="svg-sub tx-muted">spec ➜ then build</text>
+    </g>
+    <!-- forward arrows go UP into the artifact row -->
+    <line x1="84" y1="232" x2="84" y2="194" class="stroke-dur sw2" marker-end="url(#arrFwd)"/>
+    <line x1="232" y1="232" x2="232" y2="194" class="stroke-dur sw2" marker-end="url(#arrFwd)"/>
+    <text x="120" y="216" class="svg-sub tx-muted">build matches a written spec</text>
+
+    <!-- BROWNFIELD harvests BACKWARD (grey legacy ➜ artifacts) -->
+    <g>
+      <rect x="404" y="232" width="340" height="50" rx="9" class="fill-leg-soft stroke-leg sw2"/>
+      <text x="428" y="254" class="svg-label" style="fill:var(--leg);font-weight:700">BROWNFIELD</text>
+      <text x="428" y="272" class="svg-sub tx-ink">HARVESTS them BACKWARD</text>
+      <text x="624" y="263" text-anchor="middle" class="svg-sub tx-muted">live system ➜ spec</text>
+    </g>
+
+    <!-- the live running system, source of the harvest -->
+    <g>
+      <rect x="404" y="392" width="340" height="58" rx="9" class="fill-leg-soft stroke-leg sw2 dash"/>
+      <text x="574" y="416" text-anchor="middle" class="svg-label" style="fill:var(--leg);font-weight:700">THE RUNNING LEGACY SYSTEM</text>
+      <text x="574" y="436" text-anchor="middle" class="svg-sub tx-muted">behavior · DB grants · change-data · live latency</text>
+    </g>
+    <!-- backward / upward harvest arrow from live system up through brownfield into artifacts -->
+    <line x1="574" y1="392" x2="574" y2="282" class="stroke-leg sw2" marker-end="url(#arrBack)"/>
+    <text x="588" y="340" class="svg-sub tx-muted">harvest</text>
+    <text x="588" y="354" class="svg-sub tx-muted" style="font-weight:700">backward</text>
+    <!-- continue arrows up from brownfield box into the artifact row -->
+    <line x1="528" y1="232" x2="528" y2="194" class="stroke-leg sw2" marker-end="url(#arrBack)"/>
+    <line x1="676" y1="232" x2="676" y2="194" class="stroke-leg sw2" marker-end="url(#arrBack)"/>
+
+    <!-- key takeaway strip -->
+    <rect x="16" y="300" width="340" height="80" rx="9" class="fill-card stroke-line sw1"/>
+    <text x="186" y="326" text-anchor="middle" class="svg-label tx-ink" style="font-weight:700">No spec to protect?</text>
+    <text x="186" y="350" text-anchor="middle" class="svg-sub tx-ink">You manufacture the durable layer</text>
+    <text x="186" y="368" text-anchor="middle" class="svg-sub tx-ink">by harvesting it from what already runs.</text>
+  </svg>
+</div></div><p class="point"><span class="pt">The point</span>You can&#x27;t protect a durable layer that doesn&#x27;t exist — on a brownfield you manufacture it by harvesting it backward out of the running system.</p><div class="detail"><h3>In depth</h3><p>On greenfield you author the durable layer <b>forward</b>; on a brownfield you <b>harvest</b> it backward from the running system. Five artifacts:</p>
+<ul>
+<li><b>Spec</b> — harvested: AI drafts capability hypotheses from code + CDC + traffic; the domain owner <b>corrects</b> the draft (people correct better than they author from blank) and signs the edge-case exceptions. <i>Regulated slices are the exception</i> — their spec is authored forward from the regulation, and legacy divergence is a finding to adjudicate; the legacy may be the thing that's wrong.</li>
+<li><b>Contracts</b> — versioned IDL/OpenAPI + consumer-driven (Pact) contracts, built from DB grants + CDC, never app-edge tracing.</li>
+<li><b>Tests</b> — the four-layer oracle (card 8).</li>
+<li><b>Schema</b> — owned views + expand/contract (card 7).</li>
+<li><b>Performance</b> — the 5th artifact: capture p50/p99/p99.9, throughput, query plan, lock-hold and pool footprint, and gate it offline in CI, <b>co-equal with correctness</b>. A functionally-perfect, 3× slower slice must fail.</li>
+</ul></div></section>
+<section class="card"><div class="card-head"><div class="card-num">11</div><h2 class="card-title">How a regeneration earns live traffic</h2></div><div class="card-body"><div style="width:100%">
+<svg viewBox="0 0 760 420" width="100%" style="height:auto;display:block" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Left-to-right safety pipeline for taking a regeneration live, with the incumbent kept warm the whole time">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" class="fill-dur"/>
+    </marker>
+    <marker id="arRed" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" class="fill-dan"/>
+    </marker>
+  </defs>
+
+  <style>
+    .stg { rx:10px; }
+    .num { font-weight:700; }
+  </style>
+
+  <!-- ===== STAGE STRIP (6 boxes, evenly spaced) ===== -->
+  <!-- columns: x centers at 90,210,330,450,570,690 ; box width 108, gap 12 -->
+
+  <!-- 1. FAIL-CLOSED SEAM -->
+  <g>
+    <rect x="20" y="40" width="116" height="96" rx="10" class="fill-dur-soft stroke-dur sw2"/>
+    <circle cx="40" cy="60" r="11" class="fill-dur"/>
+    <text x="40" y="64" text-anchor="middle" class="svg-sub tx-white num">1</text>
+    <text x="78" y="86" text-anchor="middle" class="svg-label tx-ink" style="font-weight:700">Fail-closed</text>
+    <text x="78" y="103" text-anchor="middle" class="svg-label tx-ink" style="font-weight:700">seam</text>
+    <text x="78" y="122" text-anchor="middle" class="svg-sub tx-muted">unknown input</text>
+    <text x="78" y="133" text-anchor="middle" class="svg-sub tx-muted">→ legacy</text>
+  </g>
+
+  <!-- 2. OFFLINE DIFF vs ORACLE -->
+  <g>
+    <rect x="148" y="40" width="116" height="96" rx="10" class="fill-dur-soft stroke-dur sw2"/>
+    <circle cx="168" cy="60" r="11" class="fill-dur"/>
+    <text x="168" y="64" text-anchor="middle" class="svg-sub tx-white num">2</text>
+    <text x="206" y="86" text-anchor="middle" class="svg-label tx-ink" style="font-weight:700">Offline diff</text>
+    <text x="206" y="103" text-anchor="middle" class="svg-label tx-ink" style="font-weight:700">vs oracle</text>
+    <text x="206" y="124" text-anchor="middle" class="svg-sub fill-dur" style="font-weight:700">0 unexplained</text>
+    <text x="206" y="134" text-anchor="middle" class="svg-sub fill-dur" style="font-weight:700">diffs ✓</text>
+  </g>
+
+  <!-- 3. SHADOW on live traffic -->
+  <g>
+    <rect x="276" y="40" width="116" height="96" rx="10" class="fill-disp-soft stroke-disp sw2 dash"/>
+    <circle cx="296" cy="60" r="11" class="fill-disp"/>
+    <text x="296" y="64" text-anchor="middle" class="svg-sub tx-white num">3</text>
+    <text x="334" y="86" text-anchor="middle" class="svg-label tx-ink" style="font-weight:700">Isolated</text>
+    <text x="334" y="103" text-anchor="middle" class="svg-label tx-ink" style="font-weight:700">shadow</text>
+    <text x="334" y="122" text-anchor="middle" class="svg-sub tx-muted">5–10% live,</text>
+    <text x="334" y="133" text-anchor="middle" class="svg-sub tx-muted">capped + kill-switch</text>
+  </g>
+
+  <!-- 4. SIDE-EFFECT CASCADE on clone -->
+  <g>
+    <rect x="404" y="40" width="116" height="96" rx="10" class="fill-disp-soft stroke-disp sw2 dash"/>
+    <circle cx="424" cy="60" r="11" class="fill-disp"/>
+    <text x="424" y="64" text-anchor="middle" class="svg-sub tx-white num">4</text>
+    <text x="462" y="86" text-anchor="middle" class="svg-label tx-ink" style="font-weight:700">Cascade test</text>
+    <text x="462" y="103" text-anchor="middle" class="svg-label tx-ink" style="font-weight:700">on clone</text>
+    <text x="462" y="122" text-anchor="middle" class="svg-sub tx-muted">side-effects on a</text>
+    <text x="462" y="133" text-anchor="middle" class="svg-sub tx-muted">production clone</text>
+  </g>
+
+  <!-- 5. CANARY ramp (decision gate) -->
+  <g>
+    <rect x="532" y="40" width="116" height="96" rx="10" class="fill-dec-soft stroke-dec sw2"/>
+    <circle cx="552" cy="60" r="11" class="fill-dec"/>
+    <text x="552" y="64" text-anchor="middle" class="svg-sub tx-white num">5</text>
+    <text x="590" y="86" text-anchor="middle" class="svg-label tx-ink" style="font-weight:700">Canary ramp</text>
+    <text x="590" y="106" text-anchor="middle" class="svg-sub fill-dec" style="font-weight:700">1→5→25</text>
+    <text x="590" y="118" text-anchor="middle" class="svg-sub fill-dec" style="font-weight:700">→50→100%</text>
+  </g>
+
+  <!-- 6. AUTO-ROLLBACK -->
+  <g>
+    <rect x="660" y="40" width="84" height="96" rx="10" class="fill-dan-soft stroke-dan sw2"/>
+    <circle cx="678" cy="60" r="11" class="fill-dan"/>
+    <text x="678" y="64" text-anchor="middle" class="svg-sub tx-white num">6</text>
+    <text x="702" y="88" text-anchor="middle" class="svg-label tx-ink" style="font-weight:700">Auto-</text>
+    <text x="702" y="104" text-anchor="middle" class="svg-label tx-ink" style="font-weight:700">rollback</text>
+    <text x="702" y="124" text-anchor="middle" class="svg-sub tx-muted">machine-driven</text>
+  </g>
+
+  <!-- forward arrows between stages (teal = progress) -->
+  <line x1="136" y1="88" x2="146" y2="88" class="stroke-dur sw2" marker-end="url(#ar)"/>
+  <line x1="264" y1="88" x2="274" y2="88" class="stroke-dur sw2" marker-end="url(#ar)"/>
+  <line x1="392" y1="88" x2="402" y2="88" class="stroke-dur sw2" marker-end="url(#ar)"/>
+  <line x1="520" y1="88" x2="530" y2="88" class="stroke-dur sw2" marker-end="url(#ar)"/>
+  <line x1="648" y1="88" x2="658" y2="88" class="stroke-dur sw2" marker-end="url(#ar)"/>
+
+  <!-- ===== ROLLBACK RETURN PATH (red, any stage can abort back to legacy) ===== -->
+  <text x="382" y="172" text-anchor="middle" class="svg-sub fill-dan" style="font-weight:700">any failure ✕ → instant rollback to incumbent</text>
+  <!-- a red line sweeping from the auto-rollback box down to the legacy bar -->
+  <path d="M702,136 L702,196 L60,196" fill="none" class="stroke-dan sw2 dash" marker-end="url(#arRed)"/>
+
+  <!-- ===== PERSISTENT LEGACY BAR (incumbent kept warm) ===== -->
+  <rect x="20" y="212" width="724" height="62" rx="10" class="fill-leg-soft stroke-leg sw2"/>
+  <circle cx="52" cy="243" r="13" class="fill-leg"/>
+  <text x="52" y="248" text-anchor="middle" class="svg-label tx-white" style="font-weight:700">✓</text>
+  <text x="76" y="238" class="svg-label tx-ink" style="font-weight:700">INCUMBENT KEPT FULLY WARM</text>
+  <text x="76" y="256" class="svg-sub tx-muted">the entire time — rollback target is always live, never cold-started</text>
+
+  <!-- thin connectors: every stage sits on top of the warm incumbent -->
+  <g class="stroke-leg sw1" opacity="0.55">
+    <line x1="78" y1="136" x2="78" y2="212"/>
+    <line x1="206" y1="136" x2="206" y2="212"/>
+    <line x1="334" y1="136" x2="334" y2="212"/>
+    <line x1="462" y1="136" x2="462" y2="212"/>
+    <line x1="590" y1="136" x2="590" y2="212"/>
+  </g>
+
+  <!-- ===== LEGEND ===== -->
+  <g transform="translate(20,300)">
+    <rect x="0" y="0" width="16" height="12" rx="3" class="fill-dur-soft stroke-dur sw1"/>
+    <text x="22" y="10" class="svg-sub tx-muted">durable proof (oracle, seam)</text>
+
+    <rect x="210" y="0" width="16" height="12" rx="3" class="fill-disp-soft stroke-disp sw1 dash"/>
+    <text x="232" y="10" class="svg-sub tx-muted">disposable regen under test</text>
+
+    <rect x="430" y="0" width="16" height="12" rx="3" class="fill-dec-soft stroke-dec sw1"/>
+    <text x="452" y="10" class="svg-sub tx-muted">gated ramp decision</text>
+  </g>
+  <g transform="translate(20,324)">
+    <rect x="0" y="0" width="16" height="12" rx="3" class="fill-dan-soft stroke-dan sw1"/>
+    <text x="22" y="10" class="svg-sub tx-muted">abort / rollback path</text>
+
+    <rect x="210" y="0" width="16" height="12" rx="3" class="fill-leg-soft stroke-leg sw1"/>
+    <text x="232" y="10" class="svg-sub tx-muted">legacy incumbent (warm)</text>
+  </g>
+
+  <!-- ===== ONE-LINE THESIS STRIP ===== -->
+  <rect x="20" y="356" width="724" height="44" rx="10" class="fill-card stroke-line sw1"/>
+  <text x="382" y="375" text-anchor="middle" class="svg-label tx-ink" style="font-weight:700">Earn traffic gradually · stay reversible at every step</text>
+  <text x="382" y="392" text-anchor="middle" class="svg-sub tx-muted">offline proof → shadow → clone → canary — never a big-bang switch</text>
+</svg>
+</div></div><p class="point"><span class="pt">The point</span>A regeneration wins live traffic one reversible step at a time, with the old system kept fully warm so rollback is instant.</p><div class="detail"><h3>In depth</h3><p>A regen earns production gradually and reversibly — it never just "goes live":</p>
+<ul>
+<li><b>Fail-closed seam</b> — any input the harness never characterised routes to legacy or errors loudly; an unverified path never guesses.</li>
+<li><b>Offline diff</b> — zero unexplained functional diffs against the oracle, plus the performance gate, before any live capacity is spent.</li>
+<li><b>Isolated shadow</b> — replay 5–10% of live traffic on isolated infra (read-replica, separate pool/cache), capped globally, with an SLO-burn kill-switch. Shadow is a guest, never a co-equal tenant.</li>
+<li><b>Cascade test on a production clone</b> — for write slices, prove the full side-effect cascade (real triggers/procs/CDC fire), not just the values the slice wrote.</li>
+<li><b>Canary 1→5→25→50→100%</b> with <b>machine-driven</b> auto-rollback (no human in the retreat path); stateful slices use pre-warm / drain / overlap, not a sub-30-second flip.</li>
+</ul>
+<p>The incumbent stays fully <b>warm</b> the entire bake; one auto-rollback freezes the slice and pages a human (anti-flap), rather than re-canarying into the same failure.</p></div></section>
+<section class="card"><div class="card-head"><div class="card-num">12</div><h2 class="card-title">Regenerate Only When ROI Clears</h2></div><div class="card-body"><div style="width:100%">
+<svg viewBox="0 0 760 600" width="100%" style="height:auto;display:block" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Economic gate: regenerate only when savings beat durable-layer plus verification cost; otherwise hand-maintain">
+  <defs>
+    <marker id="ah-ink" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" class="fill-dec"/>
+    </marker>
+    <marker id="ah-dur" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" class="fill-dur"/>
+    </marker>
+    <marker id="ah-warn" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" class="fill-warn"/>
+    </marker>
+  </defs>
+
+  <!-- ============ THE GATE (decision = purple) ============ -->
+  <g>
+    <rect x="70" y="14" width="620" height="92" rx="12" class="fill-dec-soft stroke-dec sw2"/>
+    <text x="380" y="40" text-anchor="middle" class="svg-label tx-ink" style="font-weight:700">THE GATE — does the math clear?</text>
+    <!-- inequality, split into colour-coded terms -->
+    <text x="380" y="68" text-anchor="middle" class="svg-label tx-ink">
+      <tspan class="tx-ink" style="fill:var(--dur)">Savings over 2–3 yrs</tspan>
+      <tspan class="tx-muted">  (vs AI-assisted hand-maintenance)</tspan>
+    </text>
+    <text x="380" y="92" text-anchor="middle" class="svg-label tx-ink">
+      <tspan style="font-weight:800;fill:var(--dec)">&#62;</tspan>
+      <tspan class="tx-ink">  durable-layer cost</tspan>
+      <tspan class="tx-muted">  +  ( N &#215; verify cost )</tspan>
+      <tspan style="font-weight:800;fill:var(--dec)">  ?</tspan>
+    </text>
+  </g>
+
+  <!-- branch stems -->
+  <path d="M380 106 L380 128" class="stroke-dec sw2" fill="none"/>
+  <path d="M380 128 L210 128 L210 150" class="stroke-dec sw2" fill="none" marker-end="url(#ah-ink)"/>
+  <path d="M380 128 L550 128 L550 150" class="stroke-dec sw2" fill="none" marker-end="url(#ah-ink)"/>
+
+  <!-- branch labels -->
+  <text x="250" y="144" text-anchor="middle" class="svg-sub" style="font-weight:700;fill:var(--dur)">YES &#10003;</text>
+  <text x="512" y="144" text-anchor="middle" class="svg-sub" style="font-weight:700;fill:var(--warn)">NO</text>
+
+  <!-- ============ YES → REGENERATE (disposable = blue) ============ -->
+  <g>
+    <rect x="92" y="152" width="236" height="76" rx="12" class="fill-disp-soft stroke-disp sw2 dash"/>
+    <text x="210" y="184" text-anchor="middle" class="svg-title" style="fill:var(--disp)">REGENERATE</text>
+    <text x="210" y="208" text-anchor="middle" class="svg-sub tx-muted">code becomes disposable &#183; 50&#215;</text>
+  </g>
+
+  <!-- ============ NO → HAND-MAINTAIN (durable = teal, success) ============ -->
+  <g>
+    <rect x="432" y="152" width="236" height="76" rx="12" class="fill-dur-soft stroke-dur sw2"/>
+    <text x="550" y="180" text-anchor="middle" class="svg-title" style="fill:var(--dur)">HAND-MAINTAIN</text>
+    <text x="550" y="201" text-anchor="middle" class="svg-sub tx-ink" style="font-weight:700">&#10003; a SUCCESS,</text>
+    <text x="550" y="218" text-anchor="middle" class="svg-sub tx-muted">not a failure</text>
+  </g>
+
+  <!-- connector down to the bins -->
+  <path d="M550 228 L550 250 L380 250 L380 272" class="stroke-warn sw2" fill="none" marker-end="url(#ah-warn)"/>
+
+  <!-- ============ ALWAYS HAND-MAINTAIN BINS (caveat = amber) ============ -->
+  <text x="380" y="292" text-anchor="middle" class="svg-label tx-ink" style="font-weight:700">Auto-disqualified &#8212; always hand-maintain</text>
+
+  <!-- 5 bins, evenly spaced. width 760, margins 30 → usable 700, gap 14 → 5 boxes of 128.8 ≈ 128 -->
+  <!-- helper geometry: x positions 30,172,314,456,598 ; w=132 ; gap=10 -->
+  <g>
+    <!-- bin 1 -->
+    <rect x="30" y="306" width="132" height="118" rx="10" class="fill-warn-soft stroke-warn sw1"/>
+    <text x="96" y="334" text-anchor="middle" class="svg-sub tx-ink" style="font-weight:800">1</text>
+    <text x="96" y="362" text-anchor="middle" class="svg-sub tx-ink" style="font-weight:700">Low-churn</text>
+    <text x="96" y="378" text-anchor="middle" class="svg-sub tx-ink" style="font-weight:700">stable</text>
+    <text x="96" y="402" text-anchor="middle" class="svg-sub tx-muted">savings &#8776; 0</text>
+
+    <!-- bin 2 -->
+    <rect x="172" y="306" width="132" height="118" rx="10" class="fill-warn-soft stroke-warn sw1"/>
+    <text x="238" y="334" text-anchor="middle" class="svg-sub tx-ink" style="font-weight:800">2</text>
+    <text x="238" y="362" text-anchor="middle" class="svg-sub tx-ink" style="font-weight:700">Data-</text>
+    <text x="238" y="378" text-anchor="middle" class="svg-sub tx-ink" style="font-weight:700">entangled</text>
+    <text x="238" y="402" text-anchor="middle" class="svg-sub tx-muted">can't decouple</text>
+
+    <!-- bin 3 — CANNOT-CERTIFY = the fatal one, red -->
+    <rect x="314" y="306" width="132" height="118" rx="10" class="fill-dan-soft stroke-dan sw2"/>
+    <text x="380" y="334" text-anchor="middle" class="svg-sub" style="font-weight:800;fill:var(--dan)">3 &#10007;</text>
+    <text x="380" y="362" text-anchor="middle" class="svg-sub tx-ink" style="font-weight:700">CANNOT-</text>
+    <text x="380" y="378" text-anchor="middle" class="svg-sub tx-ink" style="font-weight:700">CERTIFY</text>
+    <text x="380" y="402" text-anchor="middle" class="svg-sub" style="fill:var(--dan)">no test oracle</text>
+
+    <!-- bin 4 -->
+    <rect x="456" y="306" width="132" height="118" rx="10" class="fill-warn-soft stroke-warn sw1"/>
+    <text x="522" y="334" text-anchor="middle" class="svg-sub tx-ink" style="font-weight:800">4</text>
+    <text x="522" y="362" text-anchor="middle" class="svg-sub tx-ink" style="font-weight:700">Regulated</text>
+    <text x="522" y="386" text-anchor="middle" class="svg-sub tx-muted">only ~2&#8211;5&#215;,</text>
+    <text x="522" y="402" text-anchor="middle" class="svg-sub tx-muted">not 50&#215;</text>
+
+    <!-- bin 5 -->
+    <rect x="598" y="306" width="132" height="118" rx="10" class="fill-warn-soft stroke-warn sw1"/>
+    <text x="664" y="334" text-anchor="middle" class="svg-sub tx-ink" style="font-weight:800">5</text>
+    <text x="664" y="362" text-anchor="middle" class="svg-sub tx-ink" style="font-weight:700">No DB</text>
+    <text x="664" y="378" text-anchor="middle" class="svg-sub tx-ink" style="font-weight:700">headroom</text>
+    <text x="664" y="402" text-anchor="middle" class="svg-sub tx-muted">blast radius</text>
+  </g>
+
+  <!-- ============ THE TAKEAWAY BAR ============ -->
+  <g>
+    <rect x="30" y="446" width="700" height="58" rx="12" class="fill-card stroke-line sw1"/>
+    <text x="380" y="472" text-anchor="middle" class="svg-label tx-ink" style="font-weight:700">
+      Regenerate only the slices that clear the gate.
+    </text>
+    <text x="380" y="492" text-anchor="middle" class="svg-sub tx-muted">
+      For most of the platform, &#8220;never regenerate&#8221; is the right, permanent answer.
+    </text>
+  </g>
+
+  <!-- legend strip -->
+  <g transform="translate(30,524)">
+    <rect x="0" y="0" width="18" height="14" rx="3" class="fill-disp-soft stroke-disp sw1 dash"/>
+    <text x="24" y="11" class="svg-sub tx-muted">disposable</text>
+    <rect x="120" y="0" width="18" height="14" rx="3" class="fill-dur-soft stroke-dur sw1"/>
+    <text x="144" y="11" class="svg-sub tx-muted">durable / success</text>
+    <rect x="280" y="0" width="18" height="14" rx="3" class="fill-warn-soft stroke-warn sw1"/>
+    <text x="304" y="11" class="svg-sub tx-muted">caveat</text>
+    <rect x="380" y="0" width="18" height="14" rx="3" class="fill-dan-soft stroke-dan sw1"/>
+    <text x="404" y="11" class="svg-sub tx-muted">fatal trap</text>
+    <rect x="490" y="0" width="18" height="14" rx="3" class="fill-dec-soft stroke-dec sw1"/>
+    <text x="514" y="11" class="svg-sub tx-muted">decision / gate</text>
+  </g>
+</svg>
+</div></div><p class="point"><span class="pt">The point</span>Regenerate only the few slices where multi-year savings beat the durable-layer plus verification cost — for most of the platform, &quot;never regenerate&quot; is the correct, permanent answer.</p><div class="detail"><h3>In depth</h3><p>Regeneration is not free — the cost moves from <i>writing</i> to <i>manufacturing-and-verifying</i> the durable layer. So gate every slice on honest economics:</p>
+<p class="mono">regenerate only if &nbsp;(regen frequency over 2–3 yrs × saving vs AI-assisted hand-maintenance) &nbsp;&gt;&nbsp; (durable-layer opex + N × verify cost)</p>
+<p>Two traps: measure against an <b>AI-assisted hand-maintenance</b> baseline (not unaided manual work — that inflates the win), and keep <b>two ledgers</b> — amortising foundry CAPEX vs non-amortising per-slice OPEX, with break-even computed against the opex.</p>
+<p>Five categories are <b>always</b> hand-maintained:</p>
+<ul>
+<li><b>Low-churn stable</b> — won't change enough to repay the quad.</li>
+<li><b>Data-entangled</b> — can't be decoupled yet.</li>
+<li><b>Cannot-certify</b> — intent unrecoverable; the oracle fails the mutation gate.</li>
+<li><b>Regulated where re-certification &gt; change value</b> — the honest multiple here is ~2–5×, not 50×.</li>
+<li><b>No DB headroom</b> — the safety machinery itself would breach the SLO.</li>
+</ul>
+<p>"Slices correctly never regenerated" is a <b>success metric</b>, not a backlog.</p></div></section>
+<section class="card"><div class="card-head"><div class="card-num">13</div><h2 class="card-title">Stop Reviewing Code, Own The Spec</h2></div><div class="card-body"><style>
+  .org-svg text { font-family: inherit; }
+</style>
+<svg class="org-svg" viewBox="0 0 760 560" width="100%" style="height:auto;display:block">
+  <defs>
+    <marker id="org-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" class="fill-dur"/>
+    </marker>
+    <marker id="org-arrow-grey" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" class="fill-leg"/>
+    </marker>
+  </defs>
+
+  <!-- ============ TOP: BEFORE / AFTER inversion ============ -->
+
+  <!-- BEFORE (legacy / grey) -->
+  <rect x="14" y="14" width="338" height="206" rx="14" class="fill-leg-soft stroke-leg sw2"/>
+  <text x="34" y="44" class="svg-label tx-ink" font-weight="700">BEFORE</text>
+  <text x="120" y="44" class="svg-sub tx-muted">old culture</text>
+
+  <!-- before card 1 -->
+  <rect x="34" y="60" width="298" height="62" rx="9" class="fill-card stroke-leg sw1"/>
+  <text x="50" y="86" class="svg-label tx-ink" font-weight="600">Humans REVIEW DIFFS</text>
+  <text x="50" y="106" class="svg-sub tx-muted">line-by-line, by hand, every change</text>
+
+  <!-- before card 2 -->
+  <rect x="34" y="134" width="298" height="62" rx="9" class="fill-card stroke-leg sw1"/>
+  <text x="50" y="160" class="svg-label tx-ink" font-weight="600">Guard MY module</text>
+  <text x="50" y="180" class="svg-sub tx-muted">territory, gatekeeping, bottlenecks</text>
+
+  <!-- inversion arrow -->
+  <line x1="358" y1="117" x2="402" y2="117" class="stroke-dur sw2" marker-end="url(#org-arrow)"/>
+  <text x="380" y="105" text-anchor="middle" class="svg-sub tx-muted">invert</text>
+
+  <!-- AFTER (durable / teal) -->
+  <rect x="408" y="14" width="338" height="206" rx="14" class="fill-dur-soft stroke-dur sw2"/>
+  <text x="428" y="44" class="svg-label tx-ink" font-weight="700">AFTER</text>
+  <text x="510" y="44" class="svg-sub tx-muted">new culture</text>
+
+  <!-- after card 1 -->
+  <rect x="428" y="60" width="298" height="46" rx="9" class="fill-card stroke-dur sw1"/>
+  <text x="446" y="80" class="svg-label tx-ink" font-weight="600">✓ AUTHOR &amp; OWN the durable layer</text>
+  <text x="446" y="98" class="svg-sub tx-muted">spec · contracts · test oracle</text>
+
+  <!-- after card 2 -->
+  <rect x="428" y="116" width="298" height="42" rx="9" class="fill-card stroke-dur sw1"/>
+  <text x="446" y="136" class="svg-label tx-ink" font-weight="600">Harness verifies automatically</text>
+  <text x="446" y="152" class="svg-sub tx-muted">diff-testing, no human in the loop</text>
+
+  <!-- after card 3 -->
+  <rect x="428" y="168" width="298" height="42" rx="9" class="fill-card stroke-dur sw1"/>
+  <text x="446" y="188" class="svg-label tx-ink" font-weight="600">Humans adjudicate the residue</text>
+  <text x="446" y="204" class="svg-sub tx-muted">only the cases the oracle can't decide</text>
+
+  <!-- divider -->
+  <line x1="14" y1="244" x2="746" y2="244" class="stroke-line sw1 dash"/>
+  <text x="14" y="276" class="svg-title tx-ink">Who does what</text>
+
+  <!-- ============ BOTTOM: team map ============ -->
+
+  <!-- Platform team = paved road (purple/decision = governs the gate) -->
+  <rect x="14" y="292" width="234" height="252" rx="14" class="fill-dec-soft stroke-dec sw2"/>
+  <text x="32" y="320" class="svg-label tx-ink" font-weight="700">Regeneration Platform</text>
+  <text x="32" y="340" class="svg-sub tx-muted">the paved road</text>
+
+  <rect x="32" y="356" width="198" height="78" rx="9" class="fill-card stroke-dec sw1"/>
+  <text x="48" y="382" class="svg-label tx-ink" font-weight="600">✓ Audits the gate</text>
+  <text x="48" y="402" class="svg-sub tx-muted">tooling, oracle harness,</text>
+  <text x="48" y="418" class="svg-sub tx-muted">paved-road standards</text>
+
+  <rect x="32" y="446" width="198" height="80" rx="9" class="fill-dan-soft stroke-dan sw2"/>
+  <text x="48" y="472" class="svg-label tx-ink" font-weight="700">✕ NEVER a per-regen</text>
+  <text x="48" y="490" class="svg-label tx-ink" font-weight="700">approver</text>
+  <text x="48" y="510" class="svg-sub tx-muted">that's the bottleneck trap</text>
+
+  <!-- Stream-aligned custody teams (teal = own durable slices) -->
+  <rect x="264" y="292" width="234" height="252" rx="14" class="fill-dur-soft stroke-dur sw2"/>
+  <text x="282" y="320" class="svg-label tx-ink" font-weight="700">Custody teams</text>
+  <text x="282" y="340" class="svg-sub tx-muted">stream-aligned</text>
+
+  <rect x="282" y="356" width="198" height="170" rx="9" class="fill-card stroke-dur sw1"/>
+  <text x="298" y="382" class="svg-label tx-ink" font-weight="600">✓ Own their slices</text>
+  <text x="298" y="402" class="svg-sub tx-muted">end-to-end custody</text>
+
+  <!-- mini slice stack -->
+  <rect x="298" y="416" width="166" height="26" rx="5" class="fill-disp-soft stroke-disp sw1 dash"/>
+  <text x="308" y="433" class="svg-sub tx-ink">regen slice A</text>
+  <rect x="298" y="448" width="166" height="26" rx="5" class="fill-disp-soft stroke-disp sw1 dash"/>
+  <text x="308" y="465" class="svg-sub tx-ink">regen slice B</text>
+  <rect x="298" y="480" width="166" height="26" rx="5" class="fill-dur stroke-dur sw1"/>
+  <text x="308" y="497" class="svg-sub tx-white" font-weight="600">+ own the spec/oracle</text>
+
+  <!-- Independent validation (amber = regulated caveat) -->
+  <rect x="514" y="292" width="232" height="252" rx="14" class="fill-warn-soft stroke-warn sw2"/>
+  <text x="532" y="320" class="svg-label tx-ink" font-weight="700">Independent</text>
+  <text x="532" y="340" class="svg-label tx-ink" font-weight="700">validation</text>
+
+  <rect x="532" y="356" width="196" height="92" rx="9" class="fill-card stroke-warn sw1"/>
+  <text x="548" y="382" class="svg-label tx-ink" font-weight="600">Challenges</text>
+  <text x="548" y="402" class="svg-label tx-ink" font-weight="600">regulated regens</text>
+  <text x="548" y="424" class="svg-sub tx-muted">separate from the team</text>
+  <text x="548" y="440" class="svg-sub tx-muted">that authored them</text>
+
+  <rect x="532" y="460" width="196" height="66" rx="9" class="fill-card stroke-warn sw1"/>
+  <text x="548" y="486" class="svg-sub tx-ink">⚠ adversarial review</text>
+  <text x="548" y="506" class="svg-sub tx-muted">for high-blast-radius,</text>
+  <text x="548" y="520" class="svg-sub tx-muted">compliance-bound slices</text>
+
+  <!-- flow: platform paves road FOR custody teams, validation checks custody -->
+  <line x1="248" y1="396" x2="282" y2="396" class="stroke-dec sw2" marker-end="url(#org-arrow)"/>
+  <line x1="498" y1="396" x2="532" y2="396" class="stroke-warn sw2" marker-end="url(#org-arrow)"/>
+</svg></div><p class="point"><span class="pt">The point</span>Humans stop guarding code diffs and start authoring the spec, contracts, and oracle — and the platform team paves the road instead of approving every regeneration.</p><div class="detail"><h3>In depth</h3><p>The hardest change is cultural, not technical. The whole point is that humans <b>stop reviewing generated diffs</b> (there are too many, and the diff isn't the durable artifact) and instead <b>author and own the spec, contracts, and oracle</b> — the harness verifies automatically, and humans adjudicate only the residue the oracle can't decide.</p>
+<p>Team shape (Team Topologies):</p>
+<ul>
+<li>A <b>Regeneration Platform team</b> owns the paved road — the seam, mediation layer, oracle/harness, comparator, perf-gate, provenance ledger, global invariant monitors. It audits the eligibility gate but is <b>never a per-regen approver</b>, or it becomes the bottleneck everyone routes around.</li>
+<li><b>Stream-aligned custody teams</b> own the durable layer of their own slices.</li>
+<li>An <b>independent validation function</b> (model-risk / SR 11‑7 style) challenges regulated regens — the builder can't be the sole certifier.</li>
+</ul>
+<p>Fund the durable layer as <b>compounding platform investment, never a time-boxed project</b> — a time-boxed harness rots and the org silently reverts to protecting code. Reward owning the spec and correctly <i>not</i> regenerating — not code heroics.</p></div></section>
+<section class="card"><div class="card-head"><div class="card-num">14</div><h2 class="card-title">Track these, not those</h2></div><div class="card-body"><div style="width:100%">
+<svg viewBox="0 0 760 470" width="100%" style="height:auto;display:block" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Track these metrics, not those">
+  <defs>
+    <marker id="ar-dur" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" class="fill-dur"/>
+    </marker>
+  </defs>
+
+  <!-- ============ LEFT COLUMN: TRACK ✓ ============ -->
+  <g>
+    <!-- header -->
+    <rect x="14" y="14" width="360" height="48" rx="10" class="fill-dur"/>
+    <text x="58" y="44" class="svg-title tx-white">TRACK</text>
+    <text x="345" y="46" text-anchor="end" font-size="26" font-weight="700" class="tx-white">✓</text>
+
+    <!-- rows -->
+    <!-- 1 -->
+    <rect x="14" y="74" width="360" height="54" rx="9" class="fill-dur-soft stroke-dur sw2"/>
+    <text x="32" y="98" class="svg-label tx-ink" font-weight="700">Behavior coverage + mutation</text>
+    <text x="32" y="116" class="svg-label tx-ink" font-weight="700">kill-rate</text>
+
+    <!-- 2 -->
+    <rect x="14" y="136" width="360" height="54" rx="9" class="fill-dur-soft stroke-dur sw2"/>
+    <text x="32" y="160" class="svg-label tx-ink" font-weight="700">Platform headroom &amp; p99</text>
+    <text x="32" y="178" class="svg-label tx-ink" font-weight="700">of hottest paths</text>
+
+    <!-- 3 -->
+    <rect x="14" y="198" width="360" height="54" rx="9" class="fill-dur-soft stroke-dur sw2"/>
+    <text x="32" y="222" class="svg-label tx-ink" font-weight="700">Human-hours per regen</text>
+    <text x="32" y="240" class="svg-sub tx-muted">must FALL</text>
+    <text x="356" y="232" text-anchor="end" font-size="18" font-weight="800" class="tx-ink">↓</text>
+
+    <!-- 4 -->
+    <rect x="14" y="260" width="360" height="54" rx="9" class="fill-dur-soft stroke-dur sw2"/>
+    <text x="32" y="284" class="svg-label tx-ink" font-weight="700">Escaped divergence</text>
+    <text x="32" y="302" class="svg-sub tx-muted">after cutover → 0</text>
+    <text x="356" y="294" text-anchor="end" font-size="16" font-weight="800" class="fill-dur" fill="currentColor">→0</text>
+
+    <!-- 5 -->
+    <rect x="14" y="322" width="360" height="54" rx="9" class="fill-dur-soft stroke-dur sw2"/>
+    <text x="32" y="346" class="svg-label tx-ink" font-weight="700">Rollbacks needing a</text>
+    <text x="32" y="364" class="svg-sub tx-muted">data migration → 0</text>
+    <text x="356" y="356" text-anchor="end" font-size="16" font-weight="800" class="fill-dur" fill="currentColor">→0</text>
+
+    <!-- 6 -->
+    <rect x="14" y="384" width="360" height="64" rx="9" class="fill-dur-soft stroke-dur sw2"/>
+    <text x="32" y="408" class="svg-label tx-ink" font-weight="700">Slices correctly NEVER</text>
+    <text x="32" y="426" class="svg-label tx-ink" font-weight="700">regenerated</text>
+    <text x="32" y="442" class="svg-sub tx-muted">that's a win, not a gap</text>
+  </g>
+
+  <!-- ============ RIGHT COLUMN: IGNORE ✕ ============ -->
+  <g>
+    <!-- header -->
+    <rect x="386" y="14" width="360" height="48" rx="10" class="fill-dan"/>
+    <text x="430" y="44" class="svg-title tx-white">IGNORE</text>
+    <text x="718" y="46" text-anchor="end" font-size="26" font-weight="700" class="tx-white">✕</text>
+
+    <!-- 1 -->
+    <rect x="386" y="74" width="360" height="54" rx="9" class="fill-dan-soft stroke-dan sw2"/>
+    <text x="404" y="106" class="svg-label tx-muted" text-decoration="line-through">Line coverage</text>
+    <text x="730" y="106" text-anchor="end" class="svg-sub tx-muted">theater</text>
+
+    <!-- 2 -->
+    <rect x="386" y="136" width="360" height="54" rx="9" class="fill-dan-soft stroke-dan sw2"/>
+    <text x="404" y="168" class="svg-label tx-muted" text-decoration="line-through">Velocity / story points</text>
+
+    <!-- 3 -->
+    <rect x="386" y="198" width="360" height="54" rx="9" class="fill-dan-soft stroke-dan sw2"/>
+    <text x="404" y="230" class="svg-label tx-muted" text-decoration="line-through">Lines of code regenerated</text>
+
+    <!-- big red X watermark over the ignore stack -->
+    <g opacity="0.10">
+      <line x1="430" y1="270" x2="700" y2="430" class="stroke-dan" stroke-width="26" stroke-linecap="round"/>
+      <line x1="700" y1="270" x2="430" y2="430" class="stroke-dan" stroke-width="26" stroke-linecap="round"/>
+    </g>
+    <text x="566" y="360" text-anchor="middle" class="svg-sub tx-muted">vanity metrics —</text>
+    <text x="566" y="378" text-anchor="middle" class="svg-sub tx-muted">they reward motion,</text>
+    <text x="566" y="396" text-anchor="middle" class="svg-sub tx-muted">not proven behavior</text>
+  </g>
+
+  <!-- divider arrow: the real question -->
+  <line x1="378" y1="74" x2="378" y2="448" class="stroke-line sw1 dash"/>
+</svg>
+</div></div><p class="point"><span class="pt">The point</span>Measure whether behavior is truly covered and the platform stays fast — not lines of code or raw delivery speed.</p><div class="detail"><h3>In depth</h3><p>Measure the things that actually de-risk regeneration; the classic dashboards mislead here.</p>
+<p><b>Track:</b></p>
+<ul>
+<li><b>Behavior-coverage</b> (held-out production traffic replayed within tolerance) reported <i>with</i> the mutation kill-rate — never a single coverage % against an invented denominator.</li>
+<li><b>Platform headroom + end-to-end p99</b> of the top-10 hottest paths — these govern cadence; capacity gates how fast you can fan out.</li>
+<li><b>Human-hours-per-regen as a falling curve</b> (flat = a verification bottleneck forming = an incident); structurally flat on regulated slices by design.</li>
+<li><b>Escaped-divergence after cutover → 0</b> (the headline safety metric).</li>
+<li><b>Rollbacks needing a data migration → 0</b> (non-zero means expand/contract was violated).</li>
+<li><b>Slices correctly never regenerated</b> — counted as wins.</li>
+</ul>
+<p><b>Ignore:</b> line coverage (theatre on legacy), velocity / story points, and lines-of-code regenerated — speed of <i>writing</i> is exactly the thing that just became cheap, and therefore meaningless.</p></div></section>
+<section class="card"><div class="card-head"><div class="card-num">15</div><h2 class="card-title">The One Risk That Sinks It</h2></div><div class="card-body"><style>
+  .heat-cell { rx: 6px; }
+  .axis-arrow { marker-end: url(#axHead); }
+</style>
+<svg viewBox="0 0 760 540" width="100%" style="height:auto;display:block" role="img" aria-label="Risk heatmap: highest stakes meet lowest test-corpus completeness in the red danger zone">
+  <defs>
+    <marker id="axHead" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" class="fill-leg"/>
+    </marker>
+  </defs>
+
+  <!-- ===== Y AXIS LABEL (test corpus completeness) ===== -->
+  <text x="22" y="270" class="svg-label tx-ink" transform="rotate(-90 22 270)" text-anchor="middle" font-weight="700">Test corpus completeness</text>
+  <text x="58" y="78"  class="svg-sub tx-muted" text-anchor="middle">HIGH</text>
+  <text x="58" y="430" class="svg-sub tx-muted" text-anchor="middle">LOW</text>
+  <line x1="72" y1="60" x2="72" y2="448" class="stroke-leg sw1 axis-arrow"/>
+
+  <!-- ===== X AXIS LABEL (slice stakes) ===== -->
+  <text x="416" y="500" class="svg-label tx-ink" text-anchor="middle" font-weight="700">Slice stakes</text>
+  <text x="120" y="470" class="svg-sub tx-muted" text-anchor="middle">low</text>
+  <text x="690" y="470" class="svg-sub tx-muted" text-anchor="middle">CROWN JEWELS</text>
+  <line x1="72" y1="448" x2="760" y2="448" class="stroke-leg sw1 axis-arrow"/>
+
+  <!-- ===== HEAT GRID 3x3 ; columns left->right = low->high stakes ; rows top->bottom = high->low completeness ===== -->
+  <!-- Row 1 (corpus HIGH) -->
+  <rect x="86"  y="60"  width="206" height="124" rx="6" class="fill-dur-soft stroke-line sw1"/>
+  <rect x="298" y="60"  width="206" height="124" rx="6" class="fill-dur-soft stroke-line sw1"/>
+  <rect x="510" y="60"  width="206" height="124" rx="6" class="fill-warn-soft stroke-line sw1"/>
+
+  <!-- Row 2 (corpus MID) -->
+  <rect x="86"  y="190" width="206" height="124" rx="6" class="fill-dur-soft stroke-line sw1"/>
+  <rect x="298" y="190" width="206" height="124" rx="6" class="fill-warn-soft stroke-line sw1"/>
+  <rect x="510" y="190" width="206" height="124" rx="6" class="fill-dan-soft stroke-line sw1"/>
+
+  <!-- Row 3 (corpus LOW) -->
+  <rect x="86"  y="320" width="206" height="124" rx="6" class="fill-warn-soft stroke-line sw1"/>
+  <rect x="298" y="320" width="206" height="124" rx="6" class="fill-dan-soft stroke-line sw1"/>
+
+  <!-- THE FATAL CELL: highest stakes + lowest completeness -->
+  <rect x="510" y="320" width="206" height="124" rx="6" class="fill-dan stroke-dan sw2"/>
+
+  <!-- safe-corner tick -->
+  <text x="189" y="128" class="svg-label tx-ink" text-anchor="middle">✓ safe to</text>
+  <text x="189" y="146" class="svg-label tx-ink" text-anchor="middle">regenerate</text>
+
+  <!-- ===== THE DANGER CELL CONTENT ===== -->
+  <text x="613" y="362" text-anchor="middle" font-size="30">⚠️</text>
+  <text x="613" y="392" class="svg-label tx-white" text-anchor="middle" font-weight="800">DANGER ZONE</text>
+  <text x="613" y="410" class="svg-sub tx-white" text-anchor="middle">month-end close · settlement</text>
+  <text x="613" y="425" class="svg-sub tx-white" text-anchor="middle">· eligibility</text>
+
+  <!-- diagonal danger arrow pointing into the fatal corner -->
+  <line x1="200" y1="118" x2="540" y2="358" class="stroke-dan sw2 dash"/>
+  <circle cx="540" cy="358" r="4" class="fill-dan"/>
+
+  <!-- ===== CAPTION BAND ===== -->
+  <rect x="86" y="455" width="0" height="0" fill="none"/>
+  <text x="416" y="528" class="svg-label tx-ink" text-anchor="middle" font-style="italic" font-weight="700">Exactly where it matters most, you understand the behavior least.</text>
+</svg></div><p class="point"><span class="pt">The point</span>The fatal failure is confidently reproducing behavior nobody understands on a crown-jewel slice — so build the machine to make that case loud and gated, never silent.</p><div class="detail"><h3>In depth</h3><p>The harness is manufactured from the <b>same un-understood system it has to certify</b> — so its <b>completeness</b>, not its consistency, is the load-bearing unknown. And the danger correlates exactly the wrong way: the slices where the corpus is structurally thinnest (high-coupling, irregular-cycle crown jewels — month-end close, settlement, eligibility) are precisely where the stakes and the hidden couplings are highest.</p>
+<p>The mutation gate, coupling discovery, fail-closed seam, global invariant monitors, and the CANNOT-CERTIFY verdict <b>measure and bound</b> this risk — they cannot eliminate it.</p>
+<p>The single fatal failure mode is shipping a <b>confident, provenance-stamped, behaviourally-equivalent reproduction of behaviour nobody actually understands.</b> Design the machine so that outcome is <b>loud and gated</b> — never silent and attested. When in doubt on a crown-jewel slice, the right answer is hand-maintain (card 12).</p></div></section>
+</div>
+</body>
+</html>
